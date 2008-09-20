@@ -125,6 +125,16 @@ class ListView:
         elif code == hme.KEY_CHANNELUP and self.pos > 0:
             self.sound('pageup')
             self.up(self.pagesize)
+        elif code == hme.KEY_ADVANCE:
+            self.sound('speedup3')
+            if self.pos < len(self.items) - 1:
+                self.pos = len(self.items) - 1
+                self.startpos = len(self.items) - self.pagesize
+            else:
+                self.pos = 0
+                self.startpos = 0
+            self.redraw()
+            self.pos_update()
         elif code in (hme.KEY_RIGHT, hme.KEY_SELECT, hme.KEY_PLAY):
             self.sound('select')
             if self.items:

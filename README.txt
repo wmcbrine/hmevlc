@@ -57,6 +57,8 @@ Changes:
        Recognize when VLC isn't found, and don't show items that need
        it.
 
+       Allow the Advance key to skip to the end/beginning of a menu.
+
        Remember the position in lower menus as well as higher. This is
        closer to the behavior of the TiVo's built-in menus. They're only
        remembered while the app is running.
