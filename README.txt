@@ -54,8 +54,7 @@ Changes:
 2.4 -- Allow specifying the location of VLC via "vlc=/path/to/vlc" in 
        the DEFAULTS section of config.ini.
 
-       Recognize when VLC isn't found, and don't show items that need
-       it.
+       When VLC is missing, don't show items that need it.
 
        Allow the Advance key to skip to the end/beginning of a menu.
 
