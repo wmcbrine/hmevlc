@@ -5,14 +5,14 @@ import hme
 WIPETIME = 0.5
 
 class ListView:
-    def __init__(self, app, title, items):
+    def __init__(self, app, title, items, pos=0, startpos=0):
         self.selected = None
         self.app = app
         self.sound = app.sound
         self.title = title
         self.items = items
-        self.pos = 0
-        self.startpos = 0
+        self.pos = pos
+        self.startpos = startpos
         if len(items) < 10:
             self.pagesize = len(items)
         else:

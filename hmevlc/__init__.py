@@ -64,6 +64,8 @@ class Hmevlc(hme.Application):
         self.config = SafeConfigParser()
         self.config.read('config.ini')
 
+        self.positions = {}
+
         self.have_vlc = vlc.have(self.get_default('DEFAULT', 'vlc', None))
         if self.have_vlc:
             self.exts = PASSTHROUGH_EXTS + TRANSCODE_EXTS
@@ -109,6 +111,8 @@ class Hmevlc(hme.Application):
                     self.in_list = False
                     self.set_focus(vid)
                 else:
+                    self.positions['Live Streams'] = (self.stream_menu.pos,
+                        self.stream_menu.startpos)
                     self.show_top()
         else:
             if focus:
@@ -127,8 +131,9 @@ class Hmevlc(hme.Application):
                    files.append(i)
         dirs.sort()
         files.sort()
+        pos, startpos = self.positions.get(path, (0, 0))
         a = ListView(self, title, [(i, 'hmevlc/folder.png') for i in dirs] +
-                                  [(i, '') for i in files])
+                                  [(i, '') for i in files], pos, startpos)
         a.basepath = path
         self.set_focus(a)
         self.filemenus.append(a)
@@ -156,6 +161,7 @@ class Hmevlc(hme.Application):
                         self.in_list = False
                         self.set_focus(vid)
                 else:
+                    self.positions[a.basepath] = (a.pos, a.startpos)
                     self.filemenus.pop()
                     if self.filemenus:
                         self.set_focus(self.filemenus[-1])
@@ -178,8 +184,11 @@ class Hmevlc(hme.Application):
                     title = self.top_menu.selected[1]
                     if title == 'Live Streams':
                         self.menu_mode = MENU_STREAMS
+                        pos, startpos = self.positions.get('Live Streams',
+                                                           (0, 0))
                         self.stream_menu = ListView(self, 'Live Streams',
-                                                    self.stream_list)
+                                                    self.stream_list,
+                                                    pos, startpos)
                         self.show_streams()
                     else:
                         self.root.set_image('hmevlc/green.png')
