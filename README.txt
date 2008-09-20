@@ -1,6 +1,6 @@
-HME/VLC video streamer, v2.3
+HME/VLC video streamer, v2.4
 by William McBrine <wmcbrine@gmail.com>
-September 11, 2008
+September 20, 2008
 
 A simple streaming HME server for the TiVo Series 3 or HD.
 
@@ -14,7 +14,7 @@ Requirements:
 - Python 2.4 or later (2.5 or later recommended)
   http://python.org/
 
-- VLC
+- VLC (0.8.6 recommended)
   http://www.videolan.org/
 
 Use:
@@ -42,7 +42,29 @@ multiple TiVos watching the same stream, with little additional
 overhead. However, two different TiVos can't simultaneously watch two 
 different streams if they both require VLC.
 
+In Windows, you may need to use the "datapath" option to specify the 
+root directory for local files:
+
+ python start.py --datapath c:\
+
+Or you can edit the "data_root =" line in start.py.
+
 Changes:
+
+2.4 -- Allow specifying the location of VLC via "vlc=/path/to/vlc" in 
+       the DEFAULTS section of config.ini.
+
+       Recognize when VLC isn't found, and don't show items that need
+       it.
+
+       Remember the position in lower menus as well as higher. This is
+       closer to the behavior of the TiVo's built-in menus. They're only
+       remembered while the app is running.
+
+       Use images for the menu backgrounds. I liked my squares routine,
+       but the TiVo didn't like all those transparent views.
+
+       A little more room for text in menus.
 
 2.3 -- No more leaking text resources.
 
