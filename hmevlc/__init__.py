@@ -81,7 +81,11 @@ class Hmevlc(hme.Application):
                     self.stream_list.append((title,
                         self.get_default(title, 'icon', '')))
             elif self.config.has_option(title, 'dir'):
-                dir_list.append((title, 'hmevlc/folder.png'))
+                path = self.config.get(title, 'dir')
+                if os.path.isdir(path):
+                    dir_list.append((title, 'hmevlc/folder.png'))
+                else:
+                    print 'Bad path:', path
 
         self.in_list = True
         self.filemenus = []
