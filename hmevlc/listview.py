@@ -20,7 +20,6 @@ class ListView:
 
     def draw(self):
         self.base = self.app.root.child(visible=False)
-        self.blank = hme.Text(self.app, '')
         self.titleshadow = self.base.child(68, 50, 508, 62, transparency=0.5)
         self.titlewin = self.base.child(64, 48, 512, 64)
         self.base.set_translation(640, 0)
@@ -60,7 +59,7 @@ class ListView:
             if item[1]:
                 self.page[i][1].set_image(item[1])
             else:
-                self.page[i][1].set_resource(self.blank)
+                self.page[i][1].clear_resource()
         hme.Color(self.app)
         self.upwin.set_visible(self.startpos)
         self.downwin.set_visible(len(self.items) >
@@ -70,7 +69,6 @@ class ListView:
         for line in self.page:
             self.line_clear(line)
         self.title_clear()
-        self.blank.remove()
         self.base.remove()
 
     def title_update(self, title_text):
