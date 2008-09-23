@@ -1,3 +1,41 @@
+# Apples and Oranges, v0.1
+# Copyright 2008 William McBrine
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# Lesser General Public License for more details.
+#
+# You didn't receive a copy of the license with this library because
+# you already have dozens of copies, don't you? If not, visit gnu.org.
+
+__author__ = 'William McBrine <wmcbrine@gmail.com>'
+__version__ = '0.1'
+__license__ = 'LGPL'
+
+""" Apples and Oranges -- ListView
+
+    The ListView class creates a simple, navigable list, in a style
+    similar to TiVo's native menus. It's initialized with a title and a
+    list of tuples, each tuple containing the text for a line, and an
+    optional icon (use None or '' for no icon). The starting selector 
+    and list positions can also be given; they default to 0.
+
+    Create the instance, then give it focus via set_focus(). When
+    finished, it returns control to the app in the same way; check the
+    results in the app's handle_focus(). The "selected" attribute
+    contains None if the user backed out of the menu; otherwise it holds
+    a tuple of the item number and text selected.
+
+    Currently this is hardwired for the 640x480 resolution.
+
+"""
+
 import time
 
 import hme
