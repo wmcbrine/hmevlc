@@ -26,7 +26,7 @@ import urllib
 from ConfigParser import SafeConfigParser
 
 import hme
-from hmevlc.listview import ListView
+from apples.listview import ListView
 from hmevlc.hmevid import VideoStreamer
 
 TITLE = 'HME/VLC'
@@ -83,7 +83,7 @@ class Hmevlc(hme.Application):
             elif self.config.has_option(title, 'dir'):
                 path = self.config.get(title, 'dir')
                 if os.path.isdir(path):
-                    dir_list.append((title, 'hmevlc/folder.png'))
+                    dir_list.append((title, 'apples/folder.png'))
                 else:
                     print 'Bad path:', path
 
@@ -91,17 +91,17 @@ class Hmevlc(hme.Application):
         self.filemenus = []
 
         if self.stream_list:
-            dir_list = [('Live Streams', 'hmevlc/folder.png')] + dir_list
+            dir_list = [('Live Streams', 'apples/folder.png')] + dir_list
         self.top_menu = ListView(self, TITLE, dir_list)
         self.show_top()
 
     def show_top(self):
-        self.root.set_image('hmevlc/red.png')
+        self.root.set_image('apples/red.png')
         self.menu_mode = MENU_TOP
         self.set_focus(self.top_menu)
 
     def show_streams(self):
-        self.root.set_image('hmevlc/blue.png')
+        self.root.set_image('apples/blue.png')
         self.set_focus(self.stream_menu)
 
     def handle_focus_streams(self, focus):
@@ -136,7 +136,7 @@ class Hmevlc(hme.Application):
         dirs.sort()
         files.sort()
         pos, startpos = self.positions.get(path, (0, 0))
-        a = ListView(self, title, [(i, 'hmevlc/folder.png') for i in dirs] +
+        a = ListView(self, title, [(i, 'apples/folder.png') for i in dirs] +
                                   [(i, '') for i in files], pos, startpos)
         a.basepath = path
         self.set_focus(a)
@@ -173,7 +173,7 @@ class Hmevlc(hme.Application):
                         self.show_top()
         else:
             if focus:
-                self.root.set_image('hmevlc/green.png')
+                self.root.set_image('apples/green.png')
                 self.in_list = True
                 self.set_focus(self.filemenus[-1])
 
@@ -195,7 +195,7 @@ class Hmevlc(hme.Application):
                                                     pos, startpos)
                         self.show_streams()
                     else:
-                        self.root.set_image('hmevlc/green.png')
+                        self.root.set_image('apples/green.png')
                         self.menu_mode = MENU_FILES
                         self.new_menu(title, self.config.get(title, 'dir'))
                 else:

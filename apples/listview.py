@@ -29,9 +29,9 @@ class ListView:
         self.bar.child(0, 1, 575, 30, colornum=0xaf)
 
         self.upwin = self.base.child(570, 100, 12, 12, visible=False,
-                                     image='hmevlc/up.png')
+                                     image='apples/up.png')
         self.downwin = self.base.child(570, 432, 12, 12, visible=False,
-                                       image='hmevlc/down.png')
+                                       image='apples/down.png')
 
         self.page = [(self.base.child(108, i * 32 + 112, 467, 32),
                       self.base.child(64, i * 32 + 112, 44, 32))
