@@ -38,23 +38,15 @@ class ListView:
                      for i in xrange(self.pagesize)]
         self.redraw()
 
-    def line_clear(self, line):
-        if line[0].resource:
-            line[0].resource.remove()
-
     def title_clear(self):
-        if self.titleshadow.resource:
-            self.titleshadow.resource.remove()
-            self.titleshadow.resource = None
-        if self.titlewin.resource:
-            self.titlewin.resource.remove()
-            self.titlewin.resource = None
+        self.titleshadow.remove_resource()
+        self.titlewin.remove_resource()
 
     def redraw(self):
         hme.Color(self.app, 0xcfcfcf)
         for i, item in enumerate(self.items[self.startpos:self.startpos +
                                             self.pagesize]):
-            self.line_clear(self.page[i])
+            self.page[i][0].remove_resource()
             self.page[i][0].set_text(item[0], flags=hme.RSRC_HALIGN_LEFT)
             if item[1]:
                 self.page[i][1].set_image(item[1])
@@ -67,7 +59,7 @@ class ListView:
 
     def remove(self):
         for line in self.page:
-            self.line_clear(line)
+            line[0].remove_resource()
         self.title_clear()
         self.base.remove()
 

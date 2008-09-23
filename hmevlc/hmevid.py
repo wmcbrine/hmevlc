@@ -118,8 +118,7 @@ class VideoStreamer:
             pos = int(round(float(pos) / 60))
         durstr = '%02d:%02d / %02d:%02d' % (pos / 60, pos % 60,
                                             dur / 60, dur % 60)
-        if self.poswin.resource:
-            self.poswin.resource.remove()
+        self.poswin.remove_resource()
         self.poswin.set_text(durstr, colornum=FG)
 
     def status_bar(self):
@@ -189,8 +188,7 @@ class VideoStreamer:
         self.info_clear_sent += 1
         self.send_key(hme.KEY_TIVO, 2, animtime=8)
         if self.info:
-            if self.info_time.resource:
-                self.info_time.resource.remove()
+            self.info_time.remove_resource()
             self.info_time.set_text(time.strftime(TIMEFORMAT), colornum=FG,
                                     flags=hme.RSRC_HALIGN_RIGHT)
             self.info.set_visible()
