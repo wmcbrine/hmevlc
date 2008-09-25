@@ -46,18 +46,27 @@ else:
 client_count = 0
 pid = -1
 
-def have(path=None):
-    """ Check if VLC is really there; allow setting a non-default path. """
-    global vlcpath
-    if path:
-        vlcpath = path
+def have(config):
+    """ Check if VLC is really there; allow setting a non-default path 
+        and other options, via config.ini.
+
+    """
+    global vlcpath, VBITRATE, SERVER
+    if config.has_section('hmevlc'):
+        for opt, value in config.items('hmevlc'):
+            if opt == 'vlc':
+                vlcpath = value
+            elif opt == 'vbitrate':
+                VBITRATE = int(value)
+            elif opt == 'vlcport':
+                SERVER = int(value)
     return os.path.isfile(vlcpath)
 
 def start(url):
     """ Increment the client count, and start VLC if this is the first
         client.
-    """
 
+    """
     global client_count, pid
     client_count += 1
     if client_count == 1:
@@ -69,8 +78,8 @@ def start(url):
 def stop():
     """ Decrement the client count, and stop VLC if this was the last
         client.
-    """
 
+    """
     global client_count, pid
     if client_count:
         client_count -= 1

@@ -23,7 +23,6 @@ __license__ = 'GPL'
 import os
 import time
 import urllib
-from ConfigParser import SafeConfigParser
 
 import hme
 from apples.listview import ListView
@@ -61,12 +60,10 @@ class Hmevlc(hme.Application):
             return default
 
     def handle_active(self):
-        self.config = SafeConfigParser()
-        self.config.read('config.ini')
-
+        self.config = self.context.server.config
         self.positions = {}
 
-        self.have_vlc = vlc.have(self.get_default('DEFAULT', 'vlc', None))
+        self.have_vlc = vlc.have(self.config)
         if self.have_vlc:
             self.exts = PASSTHROUGH_EXTS + TRANSCODE_EXTS
         else:
