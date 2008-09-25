@@ -38,7 +38,7 @@ BSIZE = BWIDTH + TGAP + TWIDTH + 1
 
 BG = 0
 BG2 = 0x7f7f7f
-FG = 0xffffff
+FG = 0xcfcfcf
 
 TIMEFORMAT = '%I:%M %p '
 
@@ -66,6 +66,7 @@ class VideoStreamer:
 
     def handle_focus(self, focus):
         if focus:
+            hme.Color(self.app, FG)
             self.loadwin = self.root.child(text='Loading %s...' % self.title)
             self.root.set_color(BG)
             host, port = self.app.context.headers['host'].split(':')
