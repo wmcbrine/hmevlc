@@ -1,6 +1,6 @@
-HME/VLC video streamer, v2.4
+HME/VLC video streamer, v2.5
 by William McBrine <wmcbrine@gmail.com>
-September 20, 2008
+September 25, 2008
 
 A simple streaming HME server for the TiVo Series 3 or HD.
 
@@ -42,14 +42,26 @@ multiple TiVos watching the same stream, with little additional
 overhead. However, two different TiVos can't simultaneously watch two 
 different streams if they both require VLC.
 
-In Windows, you may need to use the "datapath" option to specify the 
-root directory for local files:
-
- python start.py --datapath c:\
-
-Or you can edit the "data_root =" line in start.py.
-
 Changes:
+
+2.5 -- Server port and video bitrate can be set in config.ini; the vlc
+       path is taken from the [hmevlc] section instead of [DEFAULT].
+
+       start.py is now identical to the HME for Python version; the port
+       and datapath are set in config.ini. (If you're upgrading from a
+       previous version and have your own, modified config.ini, you
+       should copy the [hmeserver] and [hmevlc] sections from the new
+       one.)
+
+       It should no longer be necessary to set the datapath under
+       Windows, unless your videos are on a different drive from
+       HME/VLC. You still can only use shares on one drive at a time,
+       unless all the videos in a share require reencoding.
+
+       Paths in config.ini are now validated; shares with invalid paths 
+       are skipped.
+
+       Reorganized.
 
 2.4 -- Allow specifying the location of VLC via "vlc=/path/to/vlc" in 
        the DEFAULTS section of config.ini.
