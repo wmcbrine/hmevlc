@@ -1,4 +1,4 @@
-# Apples and Oranges, v0.1
+# Apples and Oranges, v0.2
 # Copyright 2008 William McBrine
 #
 # This library is free software; you can redistribute it and/or
@@ -15,7 +15,7 @@
 # you already have dozens of copies, don't you? If not, visit gnu.org.
 
 __author__ = 'William McBrine <wmcbrine@gmail.com>'
-__version__ = '0.1'
+__version__ = '0.2'
 __license__ = 'LGPL'
 
 """ Apples and Oranges -- ListView
@@ -167,8 +167,9 @@ class ListView:
             if self.items:
                 self.selected = (self.pos, self.items[self.pos][0])
             self.app.set_focus(self.app)
-        elif code not in (hme.KEY_VOLUMEUP, hme.KEY_VOLUMEDOWN,
-                          hme.KEY_MUTE, hme.KEY_TIVO):
+        elif code == hme.KEY_TIVO:
+            self.title_update(self.title)
+        elif code not in (hme.KEY_VOLUMEUP, hme.KEY_VOLUMEDOWN, hme.KEY_MUTE):
             self.sound('bonk')
 
     def handle_key_repeat(self, code, rawcode):
@@ -181,11 +182,11 @@ class ListView:
             self.base.set_visible()
             if self.selected:
                 self.base.set_translation(0, 0)
+                self.title_update(self.title)
             else:
                 anim = hme.Animation(self.app, WIPETIME, 1)
                 self.base.set_translation(0, 0, anim)
-                time.sleep(WIPETIME)
-            self.title_update(self.title)
+                self.app.send_key(hme.KEY_TIVO, animation=anim)
         else:
             if not self.selected:
                 anim = hme.Animation(self.app, WIPETIME, -1)
