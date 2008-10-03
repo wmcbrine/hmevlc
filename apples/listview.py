@@ -62,7 +62,6 @@ class ListView:
         self.titlewin = self.base.child(64, 48, 512, 64)
         self.base.set_translation(640, 0)
 
-        self.base.child(64, 112, 576, 320, transparency=0.5, colornum=0)
         self.bar = self.base.child(0, 112, 576, 32, colornum=0xffff00)
         self.bar.child(0, 1, 575, 30, colornum=0xaf)
 
