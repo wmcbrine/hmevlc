@@ -24,15 +24,14 @@ __license__ = 'LGPL'
     similar to TiVo's native menus. It's initialized with a title and a
     list of tuples, each tuple containing the text for a line, and an
     optional icon (use None or '' for no icon). The starting selector 
-    and list positions can also be given; they default to 0.
+    and list positions can also be given; they default to 0. You may 
+    also specify the root window.
 
     Create the instance, then give it focus via set_focus(). When
     finished, it returns control to the app in the same way; check the
     results in the app's handle_focus(). The "selected" attribute
     contains None if the user backed out of the menu; otherwise it holds
     a tuple of the item number and text selected.
-
-    Currently this is hardwired for the 640x480 resolution.
 
 """
 
@@ -41,9 +40,12 @@ import time
 import hme
 
 WIPETIME = 0.5
+TITLE_HEIGHT = 64
+BAR_HEIGHT = 32
+ICON_WIDTH = 44
 
 class ListView:
-    def __init__(self, app, title, items, pos=0, startpos=0):
+    def __init__(self, app, title, items, pos=0, startpos=0, root=None):
         self.selected = None
         self.app = app
         self.sound = app.sound
@@ -51,27 +53,51 @@ class ListView:
         self.items = items
         self.pos = pos
         self.startpos = startpos
-        if len(items) < 10:
-            self.pagesize = len(items)
-        else:
-            self.pagesize = 10
+        if not root:
+            root = self.app.root
+        self.root = root
+        self.w = root.width
+        self.h = root.height
+        size = (self.h - 2 * hme.SAFE_TITLE_V - TITLE_HEIGHT) / BAR_HEIGHT
+        if len(items) < size:
+            size = len(items)
+        self.pagesize = size
 
     def draw(self):
-        self.base = self.app.root.child(visible=False)
-        self.titleshadow = self.base.child(68, 50, 508, 62, transparency=0.5)
-        self.titlewin = self.base.child(64, 48, 512, 64)
-        self.base.set_translation(640, 0)
+        stw = hme.SAFE_TITLE_H
+        sth = hme.SAFE_TITLE_V
+        saw = hme.SAFE_ACTION_H
+        sah = hme.SAFE_ACTION_V
+        mainw = self.w - 2 * stw
+        th = TITLE_HEIGHT
+        bh = BAR_HEIGHT
+        bw = mainw + stw
+        starth = th + sth
+        endh = self.h - sth
+        iconw = ICON_WIDTH
 
-        self.bar = self.base.child(0, 112, 576, 32, colornum=0xffff00)
-        self.bar.child(0, 1, 575, 30, colornum=0xaf)
+        self.base = self.root.child(visible=False)
+        self.titleshadow = self.base.child(stw + 4, sth + 2, mainw - 4,
+                                           th - 2, transparency=0.5)
+        self.titlewin = self.base.child(stw, sth, mainw, th)
+        self.base.set_translation(self.w, 0)
+        if bw > 704:
+            self.bar = self.base.child(0, starth, bw, bh)
+            self.bar.child(0, 0, bw / 2, bh, colornum=0xffff00)
+            self.bar.child(bw / 2, 0, bw / 2, bh, colornum=0xffff00)
+            self.bar.child(0, 1, bw / 2, bh - 2, colornum=0xaf)
+            self.bar.child(bw / 2, 1, bw / 2 - 1, bh - 2, colornum=0xaf)
+        else:
+            self.bar = self.base.child(0, starth, bw, bh, colornum=0xffff00)
+            self.bar.child(0, 1, bw - 1, bh - 2, colornum=0xaf)
 
-        self.upwin = self.base.child(570, 100, 12, 12, visible=False,
+        self.upwin = self.base.child(bw - 6, starth - 12, 12, 12, visible=False,
                                      image='apples/up.png')
-        self.downwin = self.base.child(570, 432, 12, 12, visible=False,
+        self.downwin = self.base.child(bw - 6, endh, 12, 12, visible=False,
                                        image='apples/down.png')
-
-        self.page = [(self.base.child(108, i * 32 + 112, 467, 32),
-                      self.base.child(64, i * 32 + 112, 44, 32))
+        self.page = [(self.base.child(iconw + stw, i * bh + starth,
+                                      mainw - iconw - 1, bh),
+                      self.base.child(stw, i * bh + starth, iconw, bh))
                      for i in xrange(self.pagesize)]
         self.redraw()
 
@@ -111,7 +137,8 @@ class ListView:
         hme.Color(self.app)
 
     def pos_update(self):
-        self.bar.set_bounds(ypos=((self.pos - self.startpos) * 32 + 112))
+        self.bar.set_bounds(ypos=((self.pos - self.startpos) * BAR_HEIGHT +
+                                  TITLE_HEIGHT + hme.SAFE_TITLE_V))
 
     def down(self, i):
         self.pos += i
@@ -192,6 +219,6 @@ class ListView:
                 anim = hme.Animation(self.app, WIPETIME, -1)
                 self.title_update('')
                 self.bar.remove()
-                self.base.set_translation(640, 0, anim)
+                self.base.set_translation(self.w, 0, anim)
                 time.sleep(WIPETIME)
             self.remove()
