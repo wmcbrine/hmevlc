@@ -81,15 +81,10 @@ class ListView:
                                            th - 2, transparency=0.5)
         self.titlewin = self.base.child(stw, sth, mainw, th)
         self.base.set_translation(self.w, 0)
-        if bw > 704:
-            self.bar = self.base.child(0, starth, bw, bh)
-            self.bar.child(0, 0, bw / 2, bh, colornum=0xffff00)
-            self.bar.child(bw / 2, 0, bw / 2, bh, colornum=0xffff00)
-            self.bar.child(0, 1, bw / 2, bh - 2, colornum=0xaf)
-            self.bar.child(bw / 2, 1, bw / 2 - 1, bh - 2, colornum=0xaf)
-        else:
-            self.bar = self.base.child(0, starth, bw, bh, colornum=0xffff00)
-            self.bar.child(0, 1, bw - 1, bh - 2, colornum=0xaf)
+        self.bar = self.base.child(0, starth, bw, bh)
+        self.bar.child(width=(bw - 17), colornum=0xffff00)
+        self.bar.child(0, 1, bw - 17, bh - 2, colornum=0xaf)
+        self.bar.child(xpos=(bw - 17), image='apples/round.png')
 
         self.upwin = self.base.child(bw - 6, starth - 12, 12, 12, visible=False,
                                      image='apples/up.png')
