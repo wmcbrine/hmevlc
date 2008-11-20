@@ -30,9 +30,10 @@ SERVER = 9044     # Port for VLC to use to serve video
 VCODEC = 'mp1v'
 ACODEC = 'mpga'
 VBITRATE = 2048
+ABITRATE = 256
 PARAMS = '#transcode{vcodec=%(VCODEC)s,vb=%(VBITRATE)d,' + \
-         'acodec=%(ACODEC)s,audio-sync,samplerate=44100,fps=29.97}:' + \
-         'std{access=http,dst=:%(SERVER)d,mux=ps}'
+         'acodec=%(ACODEC)s,ab=%(ABITRATE)d,audio-sync,samplerate=44100,' + \
+         'fps=29.97}:std{access=http,dst=:%(SERVER)d,mux=ps}'
 
 # Default locations for VLC under Windows, Mac OS X and Linux.
 
@@ -51,13 +52,15 @@ def have(config):
         and other options, via config.ini.
 
     """
-    global vlcpath, VBITRATE, SERVER
+    global vlcpath, VBITRATE, ABITRATE, SERVER
     if config.has_section('hmevlc'):
         for opt, value in config.items('hmevlc'):
             if opt == 'vlc':
                 vlcpath = value
             elif opt == 'vbitrate':
                 VBITRATE = int(value)
+            elif opt == 'abitrate':
+                ABITRATE = int(value)
             elif opt == 'vlcport':
                 SERVER = int(value)
     return os.path.isfile(vlcpath)
