@@ -25,6 +25,7 @@ import time
 import urllib
 
 import hme
+from hmevlc import vlc
 from apples.listview import ListView
 from hmevlc.hmevid import VideoStreamer
 
@@ -38,6 +39,9 @@ MENU_STREAMS = 1
 MENU_FILES = 2
 
 class Hmevlc(hme.Application):
+    def startup(self):
+        self.using_vlc = False
+
     def handle_device_info(self, info):
         return
         ver = info.get('version', '')
@@ -149,16 +153,16 @@ class Hmevlc(hme.Application):
                     if os.path.isdir(newpath):
                         self.new_menu(a.selected[1], newpath)
                     else:
-                        vlc = (os.path.splitext(newpath)[1].lower()
-                               not in PASSTHROUGH_EXTS)
-                        if vlc:
+                        need_vlc = (os.path.splitext(newpath)[1].lower()
+                                    not in PASSTHROUGH_EXTS)
+                        if need_vlc:
                             url = newpath
                         else:
                             base = self.context.server.datapath
                             host = self.context.headers['host']
                             newpath = newpath.replace(base, '', 1)
                             url = 'http://%s/%s' % (host, urllib.quote(newpath))
-                        vid = VideoStreamer(self, a.selected[1], url, vlc)
+                        vid = VideoStreamer(self, a.selected[1], url, need_vlc)
                         self.in_list = False
                         self.set_focus(vid)
                 else:
@@ -197,3 +201,7 @@ class Hmevlc(hme.Application):
                         self.new_menu(title, self.config.get(title, 'dir'))
                 else:
                     self.active = False
+
+    def cleanup(self):
+        if self.using_vlc:
+            vlc.stop()

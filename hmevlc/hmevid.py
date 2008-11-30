@@ -72,6 +72,7 @@ class VideoStreamer:
             host, port = self.app.context.headers['host'].split(':')
             if self.needs_vlc:
                 vlc.start(self.stream_url)
+                self.app.using_vlc = True
                 self.stream = hme.Stream(self.app, 'http://%s:%d/' %
                                          (host, vlc.SERVER), 'video/mpeg')
             else:
@@ -93,6 +94,7 @@ class VideoStreamer:
                 self.stream.remove()
             if self.needs_vlc:
                 vlc.stop()
+                self.app.using_vlc = False
             self.root.set_color(BG)
 
     def handle_error(self, code, text):
@@ -283,4 +285,5 @@ class VideoStreamer:
         if idle and not self.stream.speed:
             if self.needs_vlc:
                 vlc.stop()
+                self.app.using_vlc = False
         return bool(self.stream.speed)
