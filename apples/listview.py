@@ -91,7 +91,7 @@ class ListView:
         self.downwin = self.base.child(bw - 6, endh, 12, 12, visible=False,
                                        image='apples/down.png')
         self.page = [(self.base.child(iconw + stw, i * bh + starth,
-                                      mainw - iconw - 1, bh),
+                                      mainw - iconw - 18, bh),
                       self.base.child(stw, i * bh + starth, iconw, bh))
                      for i in xrange(self.pagesize)]
         self.redraw()
