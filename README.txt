@@ -1,6 +1,6 @@
-HME/VLC video streamer, v2.5
+HME/VLC video streamer, v2.6
 by William McBrine <wmcbrine@gmail.com>
-September 25, 2008
+December 1, 2008
 
 A simple streaming HME server for the TiVo Series 3 or HD.
 
@@ -9,7 +9,7 @@ and Windows XP.
 
 Requirements:
 
-- TiVo S3 or HD with 9.4 software
+- TiVo S3 or HD with 9.4 or later software
 
 - Python 2.4 or later (2.5 or later recommended)
   http://python.org/
@@ -43,6 +43,19 @@ overhead. However, two different TiVos can't simultaneously watch two
 different streams if they both require VLC.
 
 Changes:
+
+2.6 -- Make sure VLC is shut down even when the HME/VLC session ends
+       abnormally. Suggested by TCF user "texaslabrat".
+
+       Use AC3 instead of MPEG audio -- should allow for more channels
+       and higher quality.
+
+       Added support for setting audio bitrate via config.ini; default 
+       is 384.
+
+       Rounded end for the highlight bar; shaded background area now 
+       stays in place, as in TiVo's own menus; delay when sliding the 
+       menu in is more reliable.
 
 2.5 -- Server port and video bitrate can be set in config.ini; the vlc
        path is taken from the [hmevlc] section instead of [DEFAULT].
