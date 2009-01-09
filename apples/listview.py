@@ -1,4 +1,4 @@
-# Apples and Oranges, v0.2
+# Apples and Oranges, v0.3
 # Copyright 2008 William McBrine
 #
 # This library is free software; you can redistribute it and/or
@@ -15,7 +15,7 @@
 # you already have dozens of copies, don't you? If not, visit gnu.org.
 
 __author__ = 'William McBrine <wmcbrine@gmail.com>'
-__version__ = '0.2'
+__version__ = '0.3'
 __license__ = 'LGPL'
 
 """ Apples and Oranges -- ListView
