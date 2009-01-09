@@ -1,4 +1,4 @@
-# HME/VLC video streamer, v2.6
+# HME/VLC video streamer, v2.7
 # Copyright 2008 William McBrine
 #
 # This program is free software; you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 """ Video streamer class """
 
 __author__ = 'William McBrine <wmcbrine@gmail.com>'
-__version__ = '2.6'
+__version__ = '2.7'
 __license__ = 'GPL'
 
 import time
@@ -64,17 +64,20 @@ class VideoStreamer:
             self.loadwin.remove()
             self.loadwin = None
 
+    def start_vlc(self):
+        host, port = self.app.context.headers['host'].split(':')
+        vlc.start(self.stream_url)
+        self.app.using_vlc = True
+        self.stream = hme.Stream(self.app, 'http://%s:%d/' %
+                                 (host, vlc.SERVER), 'video/mpeg')
+
     def handle_focus(self, focus):
         if focus:
             hme.Color(self.app, FG)
             self.loadwin = self.root.child(text='Loading %s...' % self.title)
             self.root.set_color(BG)
-            host, port = self.app.context.headers['host'].split(':')
             if self.needs_vlc:
-                vlc.start(self.stream_url)
-                self.app.using_vlc = True
-                self.stream = hme.Stream(self.app, 'http://%s:%d/' %
-                                         (host, vlc.SERVER), 'video/mpeg')
+                self.start_vlc()
             else:
                 self.stream = hme.Stream(self.app, self.stream_url)
             loadback = self.loadwin.child(278, 258, 84, 14, colornum=BG2)
@@ -92,7 +95,7 @@ class VideoStreamer:
             if self.stream:
                 self.stream.pause()
                 self.stream.remove()
-            if self.needs_vlc:
+            if self.app.using_vlc:
                 vlc.stop()
                 self.app.using_vlc = False
             self.root.set_color(BG)
@@ -152,6 +155,9 @@ class VideoStreamer:
             if (status >= hme.RSRC_STATUS_ERROR or
                 status == hme.RSRC_STATUS_CLOSED):
                 if self.loadwin:
+                    if self.app.have_vlc and not self.app.using_vlc:
+                        self.start_vlc()
+                        return
                     self.loadwin_remove()
                     err = self.root.child(text='Error reading stream')
                     time.sleep(3)
@@ -283,7 +289,7 @@ class VideoStreamer:
 
     def handle_idle(self, idle):
         if idle and not self.stream.speed:
-            if self.needs_vlc:
+            if self.app.using_vlc:
                 vlc.stop()
                 self.app.using_vlc = False
         return bool(self.stream.speed)
