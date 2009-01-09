@@ -1,6 +1,6 @@
-HME/VLC video streamer, v2.6
+HME/VLC video streamer, v2.7
 by William McBrine <wmcbrine@gmail.com>
-December 1, 2008
+January 9, 2009
 
 A simple streaming HME server for the TiVo Series 3 or HD.
 
@@ -44,17 +44,30 @@ different streams if they both require VLC.
 
 Changes:
 
+2.7 -- If files or streams fail a pass-through (non-VLC) attempt, try
+       again using VLC, if available. Suggested by TCF user "goodtrips".
+       (Not as helpful as one would expect -- VLC is refusing to
+       transcode some things that it can play perfectly well.)
+
+       Added a few more recognized extensions (let me know if there's
+       one you want).
+
+       Page Up / Page Down was messed up.
+
+       Lists with more than 256 items caused an exception. Reported
+       by "Allanon".
+
 2.6 -- Make sure VLC is shut down even when the HME/VLC session ends
        abnormally. Suggested by TCF user "texaslabrat".
 
        Use AC3 instead of MPEG audio -- should allow for more channels
        and higher quality.
 
-       Added support for setting audio bitrate via config.ini; default 
+       Added support for setting audio bitrate via config.ini; default
        is 384.
 
-       Rounded end for the highlight bar; shaded background area now 
-       stays in place, as in TiVo's own menus; delay when sliding the 
+       Rounded end for the highlight bar; shaded background area now
+       stays in place, as in TiVo's own menus; delay when sliding the
        menu in is more reliable.
 
 2.5 -- Server port and video bitrate can be set in config.ini; the vlc
