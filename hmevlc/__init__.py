@@ -1,4 +1,4 @@
-# HME/VLC video streamer, v2.6
+# HME/VLC video streamer, v2.7
 # Copyright 2008 William McBrine
 #
 # This program is free software; you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 """ HME app """
 
 __author__ = 'William McBrine <wmcbrine@gmail.com>'
-__version__ = '2.6'
+__version__ = '2.7'
 __license__ = 'GPL'
 
 import os
@@ -31,8 +31,8 @@ from hmevlc.hmevid import VideoStreamer
 
 TITLE = 'HME/VLC'
 
-PASSTHROUGH_EXTS = ('.mpg', '.mp4')
-TRANSCODE_EXTS = ('.mov', '.wmv', '.avi', '.asf', '.flv', '.mkv')
+PASSTHROUGH_EXTS = ('.mpg', '.mp4', '.m4v')
+TRANSCODE_EXTS = ('.mov', '.wmv', '.avi', '.asf', '.flv', '.mkv', '.vob')
 
 MENU_TOP = 0
 MENU_STREAMS = 1
@@ -43,7 +43,6 @@ class Hmevlc(hme.Application):
         self.using_vlc = False
 
     def handle_device_info(self, info):
-        return
         ver = info.get('version', '')
         if float(ver[:3]) < 9.4:
             self.root.set_text('Sorry, this program is not compatible\n' +
