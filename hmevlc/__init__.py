@@ -1,5 +1,5 @@
 # HME/VLC video streamer, v2.7
-# Copyright 2008 William McBrine
+# Copyright 2009 William McBrine
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
