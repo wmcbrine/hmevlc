@@ -31,8 +31,9 @@ from hmevlc.hmevid import VideoStreamer
 
 TITLE = 'HME/VLC'
 
-PASSTHROUGH_EXTS = ('.mpg', '.mp4', '.m4v')
-TRANSCODE_EXTS = ('.mov', '.wmv', '.avi', '.asf', '.flv', '.mkv', '.vob')
+PASSTHROUGH_EXTS = ('.mpg', '.mp4')
+TRANSCODE_EXTS = ('.mov', '.wmv', '.avi', '.asf',
+                  '.flv', '.mkv', '.vob', '.m4v')
 
 MENU_TOP = 0
 MENU_STREAMS = 1
