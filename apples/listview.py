@@ -111,7 +111,7 @@ class ListView:
             else:
                 self.page[i][1].clear_resource()
         hme.Color(self.app)
-        self.upwin.set_visible(self.startpos)
+        self.upwin.set_visible(self.startpos > 0)
         self.downwin.set_visible(len(self.items) >
                                  self.startpos + self.pagesize)
 
@@ -135,8 +135,8 @@ class ListView:
         self.bar.set_bounds(ypos=((self.pos - self.startpos) * BAR_HEIGHT +
                                   TITLE_HEIGHT + hme.SAFE_TITLE_V))
 
-    def down(self, i):
-        self.pos += i
+    def down(self):
+        self.pos += 1
         if self.pos >= len(self.items):
             self.pos = len(self.items) - 1
         if self.pos >= (self.startpos + self.pagesize):
@@ -146,8 +146,18 @@ class ListView:
             self.redraw()
         self.pos_update()
 
-    def up(self, i):
-        self.pos -= i
+    def page_down(self):
+        self.pos += (self.pagesize - 1)
+        if self.pos >= len(self.items):
+            self.pos = len(self.items) - 1
+        self.startpos += (self.pagesize - 1)
+        if self.startpos + self.pagesize > len(self.items):
+            self.startpos = len(self.items) - self.pagesize
+        self.redraw()
+        self.pos_update()
+
+    def up(self):
+        self.pos -= 1
         if self.pos < 0:
             self.pos = 0
         if self.pos < self.startpos:
@@ -157,6 +167,16 @@ class ListView:
             self.redraw()
         self.pos_update()
 
+    def page_up(self):
+        self.pos -= (self.pagesize - 1)
+        if self.pos < 0:
+            self.pos = 0
+        self.startpos -= (self.pagesize - 1)
+        if self.startpos < 0:
+            self.startpos = 0
+        self.redraw()
+        self.pos_update()
+
     def handle_key_press(self, code, rawcode):
         if code == hme.KEY_LEFT:
             self.sound('left')
@@ -164,16 +184,16 @@ class ListView:
             self.app.set_focus(self.app)
         elif code == hme.KEY_DOWN and self.pos < len(self.items) - 1:
             self.sound()
-            self.down(1)
+            self.down()
         elif code == hme.KEY_UP and self.pos > 0:
             self.sound()
-            self.up(1)
+            self.up()
         elif code == hme.KEY_CHANNELDOWN and self.pos < len(self.items) - 1:
             self.sound('pagedown')
-            self.down(self.pagesize)
+            self.page_down()
         elif code == hme.KEY_CHANNELUP and self.pos > 0:
             self.sound('pageup')
-            self.up(self.pagesize)
+            self.page_up()
         elif code == hme.KEY_ADVANCE:
             self.sound('speedup3')
             if self.pos < len(self.items) - 1:
