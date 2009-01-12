@@ -1,5 +1,6 @@
 # HME/VLC video streamer, v2.7
 # Copyright 2009 William McBrine
+# Contributions by "Allanon"
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +24,7 @@ __license__ = 'GPL'
 import os
 import time
 import urllib
+from xml.etree import ElementTree as ET
 
 import hme
 from hmevlc import vlc
@@ -38,6 +40,8 @@ TRANSCODE_EXTS = ('.mov', '.wmv', '.avi', '.asf',
 MENU_TOP = 0
 MENU_STREAMS = 1
 MENU_FILES = 2
+MENU_RSS = 3
+MENU_SHOUTCASTTV = 4
 
 class Hmevlc(hme.Application):
     def startup(self):
@@ -93,6 +97,11 @@ class Hmevlc(hme.Application):
 
         if self.stream_list:
             dir_list = [('Live Streams', 'apples/folder.png')] + dir_list
+        dir_list += [('ShoutCast TV', 'apples/folder.png'),
+                     ('Archive Classic Movies', 'apples/folder.png'),
+                     ('TED Talks', 'apples/folder.png'),
+                     ('Tekzilla', 'apples/folder.png')]
+
         self.top_menu = ListView(self, TITLE, dir_list)
         self.show_top()
 
@@ -113,6 +122,43 @@ class Hmevlc(hme.Application):
                     vid = VideoStreamer(self, title,
                         self.config.get(title, 'url'),
                         self.get_defaultbool(title, 'needs_vlc', False))
+                    self.in_list = False
+                    self.set_focus(vid)
+                else:
+                    self.positions[self.stream_menu.title] = (
+                        self.stream_menu.pos, self.stream_menu.startpos)
+                    self.show_top()
+        else:
+            if focus:
+                self.in_list = True
+                self.show_streams()
+
+    def handle_focus_shoutcasttv(self, focus):
+        if self.in_list:
+            if focus:
+                if self.stream_menu.selected:
+                    title = self.stream_menu.selected[1]
+                    vid = VideoStreamer(self, title,
+                        "http://www.shoutcast.com/sbin/tunein-tvstation.pls?id=" +
+                        self.shoutcast_ID[self.stream_menu.selected[0]], True)
+                    self.in_list = False
+                    self.set_focus(vid)
+                else:
+                    self.positions[self.stream_menu.title] = (
+                        self.stream_menu.pos, self.stream_menu.startpos)
+                    self.show_top()
+        else:
+            if focus:
+                self.in_list = True
+                self.show_streams()
+
+    def handle_focus_rss(self, focus):
+        if self.in_list:
+            if focus:
+                if self.stream_menu.selected:
+                    title = self.stream_menu.selected[1]
+                    vid = VideoStreamer(self, title,
+                        self.rss_url[self.stream_menu.selected[0]], False)
                     self.in_list = False
                     self.set_focus(vid)
                 else:
@@ -178,9 +224,70 @@ class Hmevlc(hme.Application):
                 self.in_list = True
                 self.set_focus(self.filemenus[-1])
 
+    def handle_top_menu_streams(self):
+        self.menu_mode = MENU_STREAMS
+        pos, startpos = self.positions.get('Live Streams', (0, 0))
+        self.stream_menu = ListView(self, 'Live Streams',
+                                    self.stream_list,
+                                    pos, startpos)
+        self.show_streams()
+
+    def handle_top_menu_shoutcasttv(self):
+        feed = urllib.urlopen("http://www.shoutcast.com/sbin/newtvlister.phtml")
+        tree = ET.parse(feed)
+        self.shoutcast_list = []
+        self.shoutcast_ID = []
+        for station in tree.getroot():
+            if station.get('rt') != 'NC17':
+                title = station.get('ct')
+                if not title:
+                    title = station.get('name')
+                id = station.get('id')
+                self.shoutcast_list.append((title, ''))
+                self.shoutcast_ID.append(id)
+        self.menu_mode = MENU_SHOUTCASTTV
+        pos, startpos = self.positions.get('ShoutCast TV', (0, 0))
+        self.stream_menu = ListView(self, 'ShoutCast TV', self.shoutcast_list,
+                                    pos, startpos)
+        self.show_streams()
+
+    def rss_parse(self, rss_url, rss_title):
+        feed = urllib.urlopen(rss_url)
+        tree = ET.parse(feed)
+        titles, urls = [], []
+        for item in tree.getiterator('item'):
+            title = item.find('title').text
+            url = item.find('enclosure').get('url')
+            titles.append((title, ''))
+            urls.append(url)
+        self.menu_mode = MENU_RSS
+        pos, startpos = self.positions.get(rss_title, (0, 0))
+        self.stream_menu = ListView(self, rss_title, titles, pos, startpos)
+        self.show_streams()
+        return urls
+
+    def handle_top_menu_acm(self):
+        self.rss_url = self.rss_parse(
+            'http://www.archiveclassicmovies.com/acm.rss',
+            'Archive Classic Movies')
+
+    def handle_top_menu_ted(self):
+        self.rss_url = self.rss_parse(
+            'http://feeds.feedburner.com/tedtalks_video',
+            'TED Talks')
+
+    def handle_top_menu_tekzilla(self):
+        self.rss_url = self.rss_parse(
+            'http://revision3.com/tekzilla/feed/quicktime-high-definition/',
+            'Tekzilla')
+
     def handle_focus(self, focus):
         if self.menu_mode == MENU_STREAMS:
             self.handle_focus_streams(focus)
+        elif self.menu_mode == MENU_SHOUTCASTTV:
+            self.handle_focus_shoutcasttv(focus)
+        elif self.menu_mode == MENU_RSS:
+            self.handle_focus_rss(focus)
         elif self.menu_mode == MENU_FILES:
             self.handle_focus_files(focus)
         else:
@@ -188,13 +295,15 @@ class Hmevlc(hme.Application):
                 if self.top_menu.selected:
                     title = self.top_menu.selected[1]
                     if title == 'Live Streams':
-                        self.menu_mode = MENU_STREAMS
-                        pos, startpos = self.positions.get('Live Streams',
-                                                           (0, 0))
-                        self.stream_menu = ListView(self, 'Live Streams',
-                                                    self.stream_list,
-                                                    pos, startpos)
-                        self.show_streams()
+                        self.handle_top_menu_streams()
+                    elif title == 'ShoutCast TV':
+                        self.handle_top_menu_shoutcasttv()
+                    elif title == 'Archive Classic Movies':
+                        self.handle_top_menu_acm()
+                    elif title == 'TED Talks':
+                        self.handle_top_menu_ted()
+                    elif title == 'Tekzilla':
+                        self.handle_top_menu_tekzilla()
                     else:
                         self.root.set_image('apples/green.png')
                         self.menu_mode = MENU_FILES
