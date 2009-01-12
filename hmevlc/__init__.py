@@ -24,7 +24,13 @@ __license__ = 'GPL'
 import os
 import time
 import urllib
-from xml.etree import ElementTree as ET
+try:
+    from xml.etree import ElementTree as ET
+except ImportError:
+    try:
+        from elementtree import ElementTree as ET
+    except ImportError:
+        ET = None
 
 import hme
 from hmevlc import vlc
@@ -93,10 +99,10 @@ class Hmevlc(hme.Application):
                 if self.config.has_option(title, 'url'):
                     self.stream_list.append((title,
                         self.get_default(title, 'icon', '')))
-                elif self.config.has_option(title, 'rss'):
+                elif ET and self.config.has_option(title, 'rss'):
                     rss_list.append((title,
                         self.get_default(title, 'icon', 'apples/folder.png')))
-                elif self.config.has_option(title, 'shout_list'):
+                elif ET and self.config.has_option(title, 'shout_list'):
                     shout_list.append((title,
                         self.get_default(title, 'icon', 'apples/folder.png')))
 
