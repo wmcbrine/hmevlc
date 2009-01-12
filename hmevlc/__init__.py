@@ -128,55 +128,27 @@ class Hmevlc(hme.Application):
         self.root.set_image('apples/blue.png')
         self.set_focus(self.stream_menu)
 
-    def handle_focus_streams(self, focus):
-        if self.in_list:
-            if focus:
-                if self.stream_menu.selected:
-                    title = self.stream_menu.selected[1]
-                    vid = VideoStreamer(self, title,
-                        self.config.get(title, 'url'),
-                        self.get_defaultbool(title, 'needs_vlc', False))
-                    self.in_list = False
-                    self.set_focus(vid)
-                else:
-                    self.positions[self.stream_menu.title] = (
-                        self.stream_menu.pos, self.stream_menu.startpos)
-                    self.show_top()
-        else:
-            if focus:
-                self.in_list = True
-                self.show_streams()
+    def live_vid(self, title):
+        return VideoStreamer(self, title, self.config.get(title, 'url'),
+                             self.get_defaultbool(title, 'needs_vlc', False))
 
-    def handle_focus_shoutcast(self, focus):
-        if self.in_list:
-            if focus:
-                if self.stream_menu.selected:
-                    title = self.stream_menu.selected[1]
-                    vid = VideoStreamer(self, title,
-                        self.config.get(self.stream_menu.title, 'shout_tune') +
-                        self.shout_items[self.stream_menu.selected[0]],
-                        self.get_defaultbool(self.stream_menu.title,
-                                             'needs_vlc', False))
-                    self.in_list = False
-                    self.set_focus(vid)
-                else:
-                    self.positions[self.stream_menu.title] = (
-                        self.stream_menu.pos, self.stream_menu.startpos)
-                    self.show_top()
-        else:
-            if focus:
-                self.in_list = True
-                self.show_streams()
+    def shout_vid(self, title):
+        return VideoStreamer(self, title,
+            self.config.get(self.stream_menu.title, 'shout_tune') +
+            self.shout_items[self.stream_menu.selected[0]],
+            self.get_defaultbool(self.stream_menu.title, 'needs_vlc', False))
 
-    def handle_focus_rss(self, focus):
+    def rss_vid(self, title):
+        return VideoStreamer(self, title,
+            self.rss_items[self.stream_menu.selected[0]],
+            self.get_defaultbool(self.stream_menu.title, 'needs_vlc', False))
+
+    def handle_focus_streams(self, focus, func):
         if self.in_list:
             if focus:
                 if self.stream_menu.selected:
                     title = self.stream_menu.selected[1]
-                    vid = VideoStreamer(self, title,
-                        self.rss_items[self.stream_menu.selected[0]],
-                        self.get_defaultbool(self.stream_menu.title, 
-                                             'needs_vlc', False))
+                    vid = func(title)
                     self.in_list = False
                     self.set_focus(vid)
                 else:
@@ -296,11 +268,11 @@ class Hmevlc(hme.Application):
 
     def handle_focus(self, focus):
         if self.menu_mode == MENU_STREAMS:
-            self.handle_focus_streams(focus)
+            self.handle_focus_streams(focus, live_vid)
         elif self.menu_mode == MENU_RSS:
-            self.handle_focus_rss(focus)
+            self.handle_focus_streams(focus, rss_vid)
         elif self.menu_mode == MENU_SHOUTCAST:
-            self.handle_focus_shoutcast(focus)
+            self.handle_focus_streams(focus, shout_vid)
         elif self.menu_mode == MENU_FILES:
             self.handle_focus_files(focus)
         else:
