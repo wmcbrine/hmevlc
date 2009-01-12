@@ -116,8 +116,8 @@ class Hmevlc(hme.Application):
                     self.in_list = False
                     self.set_focus(vid)
                 else:
-                    self.positions['Live Streams'] = (self.stream_menu.pos,
-                        self.stream_menu.startpos)
+                    self.positions[self.stream_menu.title] = (
+                        self.stream_menu.pos, self.stream_menu.startpos)
                     self.show_top()
         else:
             if focus:
