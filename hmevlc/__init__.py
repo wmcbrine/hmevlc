@@ -41,7 +41,7 @@ MENU_TOP = 0
 MENU_STREAMS = 1
 MENU_FILES = 2
 MENU_RSS = 3
-MENU_SHOUTCASTTV = 4
+MENU_SHOUTCAST = 4
 
 class Hmevlc(hme.Application):
     def startup(self):
@@ -78,6 +78,7 @@ class Hmevlc(hme.Application):
             self.exts = PASSTHROUGH_EXTS
 
         self.stream_list = []
+        rss_list = []
         dir_list = []
         for title in sorted(self.config.sections()):
             if self.config.has_option(title, 'url'):
@@ -85,6 +86,11 @@ class Hmevlc(hme.Application):
                     not(self.get_defaultbool(title, 'needs_vlc', False))):
                     self.stream_list.append((title,
                         self.get_default(title, 'icon', '')))
+            elif self.config.has_option(title, 'rss'):
+                if (self.have_vlc or
+                    not(self.get_defaultbool(title, 'needs_vlc', False))):
+                    rss_list.append((title,
+                        self.get_default(title, 'icon', 'apples/folder.png')))
             elif self.config.has_option(title, 'dir'):
                 path = self.config.get(title, 'dir')
                 if os.path.isdir(path):
@@ -95,12 +101,11 @@ class Hmevlc(hme.Application):
         self.in_list = True
         self.filemenus = []
 
+        dir_list = rss_list + dir_list
         if self.stream_list:
             dir_list = [('Live Streams', 'apples/folder.png')] + dir_list
-        dir_list += [('ShoutCast TV', 'apples/folder.png'),
-                     ('Archive Classic Movies', 'apples/folder.png'),
-                     ('TED Talks', 'apples/folder.png'),
-                     ('Tekzilla', 'apples/folder.png')]
+
+        self.rss_list = [x[0] for x in rss_list]
 
         self.top_menu = ListView(self, TITLE, dir_list)
         self.show_top()
@@ -133,7 +138,7 @@ class Hmevlc(hme.Application):
                 self.in_list = True
                 self.show_streams()
 
-    def handle_focus_shoutcasttv(self, focus):
+    def handle_focus_shoutcast(self, focus):
         if self.in_list:
             if focus:
                 if self.stream_menu.selected:
@@ -158,7 +163,9 @@ class Hmevlc(hme.Application):
                 if self.stream_menu.selected:
                     title = self.stream_menu.selected[1]
                     vid = VideoStreamer(self, title,
-                        self.rss_url[self.stream_menu.selected[0]], False)
+                        self.rss_items[self.stream_menu.selected[0]],
+                        self.get_defaultbool(self.stream_menu.title, 
+                                             'needs_vlc', False))
                     self.in_list = False
                     self.set_focus(vid)
                 else:
@@ -228,11 +235,10 @@ class Hmevlc(hme.Application):
         self.menu_mode = MENU_STREAMS
         pos, startpos = self.positions.get('Live Streams', (0, 0))
         self.stream_menu = ListView(self, 'Live Streams',
-                                    self.stream_list,
-                                    pos, startpos)
+                                    self.stream_list, pos, startpos)
         self.show_streams()
 
-    def handle_top_menu_shoutcasttv(self):
+    def handle_top_menu_shoutcast(self):
         feed = urllib.urlopen("http://www.shoutcast.com/sbin/newtvlister.phtml")
         tree = ET.parse(feed)
         self.shoutcast_list = []
@@ -245,13 +251,14 @@ class Hmevlc(hme.Application):
                 id = station.get('id')
                 self.shoutcast_list.append((title, ''))
                 self.shoutcast_ID.append(id)
-        self.menu_mode = MENU_SHOUTCASTTV
+        self.menu_mode = MENU_SHOUTCAST
         pos, startpos = self.positions.get('ShoutCast TV', (0, 0))
         self.stream_menu = ListView(self, 'ShoutCast TV', self.shoutcast_list,
                                     pos, startpos)
         self.show_streams()
 
-    def rss_parse(self, rss_url, rss_title):
+    def handle_top_menu_rss(self, rss_title):
+        rss_url = self.config.get(rss_title, 'rss')
         feed = urllib.urlopen(rss_url)
         tree = ET.parse(feed)
         titles, urls = [], []
@@ -264,30 +271,15 @@ class Hmevlc(hme.Application):
         pos, startpos = self.positions.get(rss_title, (0, 0))
         self.stream_menu = ListView(self, rss_title, titles, pos, startpos)
         self.show_streams()
-        return urls
-
-    def handle_top_menu_acm(self):
-        self.rss_url = self.rss_parse(
-            'http://www.archiveclassicmovies.com/acm.rss',
-            'Archive Classic Movies')
-
-    def handle_top_menu_ted(self):
-        self.rss_url = self.rss_parse(
-            'http://feeds.feedburner.com/tedtalks_video',
-            'TED Talks')
-
-    def handle_top_menu_tekzilla(self):
-        self.rss_url = self.rss_parse(
-            'http://revision3.com/tekzilla/feed/quicktime-high-definition/',
-            'Tekzilla')
+        self.rss_items = urls
 
     def handle_focus(self, focus):
         if self.menu_mode == MENU_STREAMS:
             self.handle_focus_streams(focus)
-        elif self.menu_mode == MENU_SHOUTCASTTV:
-            self.handle_focus_shoutcasttv(focus)
         elif self.menu_mode == MENU_RSS:
             self.handle_focus_rss(focus)
+        elif self.menu_mode == MENU_SHOUTCAST:
+            self.handle_focus_shoutcast(focus)
         elif self.menu_mode == MENU_FILES:
             self.handle_focus_files(focus)
         else:
@@ -296,14 +288,10 @@ class Hmevlc(hme.Application):
                     title = self.top_menu.selected[1]
                     if title == 'Live Streams':
                         self.handle_top_menu_streams()
+                    elif title in self.rss_list:
+                        self.handle_top_menu_rss(title)
                     elif title == 'ShoutCast TV':
-                        self.handle_top_menu_shoutcasttv()
-                    elif title == 'Archive Classic Movies':
-                        self.handle_top_menu_acm()
-                    elif title == 'TED Talks':
-                        self.handle_top_menu_ted()
-                    elif title == 'Tekzilla':
-                        self.handle_top_menu_tekzilla()
+                        self.handle_top_menu_shoutcast()
                     else:
                         self.root.set_image('apples/green.png')
                         self.menu_mode = MENU_FILES
