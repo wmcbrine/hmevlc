@@ -45,7 +45,7 @@ different streams if they both require VLC.
 Changes:
 
 3.0 -- Support for iTunes-style RSS feeds, and Shoutcast TV. See the
-       included config.ini for configuration examples. Partly due to
+       included config.ini for configuration examples. Mostly due to
        "Allanon".
 
 2.7 -- If files or streams fail a pass-through (non-VLC) attempt, try
