@@ -1,6 +1,6 @@
-HME/VLC video streamer, v3.0
+HME/VLC video streamer, v3.1
 by William McBrine <wmcbrine@gmail.com>
-January 12, 2009
+January 14, 2009
 
 A simple streaming HME server for the TiVo Series 3 or HD.
 
@@ -44,9 +44,11 @@ different streams if they both require VLC.
 
 Changes:
 
+3.1 -- Use HD when possible; separate RSS icon.
+
 3.0 -- Support for iTunes-style RSS feeds, and Shoutcast TV. See the
        included config.ini for configuration examples. Mostly due to
-       "Allanon".
+       Jeff Mossontte, aka "Allanon".
 
 2.7 -- If files or streams fail a pass-through (non-VLC) attempt, try
        again using VLC, if available. Suggested by TCF user "goodtrips".
