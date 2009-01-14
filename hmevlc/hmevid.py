@@ -30,12 +30,6 @@ SOUNDS = ['speedup3', 'speedup2', 'speedup1', 'slowdown1', 'speedup1',
           'speedup2', 'speedup3']
 COLORS = [0x4f4fff, 0x7f7fff, 0x9f9fff, 0xffcfcf, 0xff9f9f, 0xff7f7f, 0xff4f4f]
 
-BWIDTH = 370
-BHEIGHT = 32
-TGAP = 8
-TWIDTH = 144
-BSIZE = BWIDTH + TGAP + TWIDTH + 1
-
 BG = 0
 BG2 = 0x7f7f7f
 FG = 0xcfcfcf
@@ -57,6 +51,27 @@ class VideoStreamer:
         self.needs_vlc = needs_vlc
         self.sound = app.sound
         self.send_key = app.send_key
+        if self.app.hd:
+            self.bheight = 48
+            self.fsize = 36
+            self.tgap = 12
+            self.vgap = 72
+            self.twidth = 216
+            self.twidth2 = 150
+            self.bwidth = 859
+            self.lwidth = 168
+            self.lheight = 15
+        else:
+            self.bheight = 32
+            self.fsize = 24
+            self.tgap = 8
+            self.vgap = 48
+            self.twidth = 144
+            self.twidth2 = 100
+            self.bwidth = 370
+            self.lwidth = 84
+            self.lheight = 10
+        self.bsize = self.bwidth + self.tgap + self.twidth + 1
 
     def loadwin_remove(self):
         if self.loadwin:
@@ -74,14 +89,19 @@ class VideoStreamer:
     def handle_focus(self, focus):
         if focus:
             hme.Color(self.app, FG)
+            hme.Font(self.app, size=self.fsize)
             self.loadwin = self.root.child(text='Loading %s...' % self.title)
             self.root.set_color(BG)
             if self.needs_vlc:
                 self.start_vlc()
             else:
                 self.stream = hme.Stream(self.app, self.stream_url)
-            loadback = self.loadwin.child(278, 258, 84, 14, colornum=BG2)
-            self.loadbar = loadback.child(2, 2, 10, 10, colornum=FG)
+            loadback = self.loadwin.child((self.root.width - self.lwidth) / 2,
+                                          self.root.height / 2 + self.fsize,
+                                          self.lwidth, self.lheight + 4,
+                                          colornum=BG2)
+            self.loadbar = loadback.child(2, 2, self.lheight, self.lheight,
+                                          colornum=FG)
             self.loadbar_anim()
         else:
             self.loadwin_remove()
@@ -99,6 +119,7 @@ class VideoStreamer:
                 vlc.stop()
                 self.app.using_vlc = False
             self.root.set_color(BG)
+            hme.Font(self.app)
 
     def handle_error(self, code, text):
         print 'Error', code, text
@@ -108,7 +129,7 @@ class VideoStreamer:
         if not self.progbar:
             return
         if self.duration:
-            width = self.position * BWIDTH / self.duration
+            width = self.position * self.bwidth / self.duration
         else:
             width = 0
         if 0 <= self.stream.speed < 1:
@@ -128,17 +149,24 @@ class VideoStreamer:
         self.poswin.set_text(durstr, colornum=FG)
 
     def status_bar(self):
-        self.progbar = self.root.child((640 - BSIZE) / 2, 400, BSIZE, BHEIGHT)
+        self.progbar = self.root.child((self.root.width - self.bsize) / 2,
+                                       self.root.height - (self.bheight +
+                                       self.vgap), self.bsize, self.bheight)
         self.progbar.child(colornum=BG).set_transparency(0.5)
-        self.status = self.progbar.child(8, 8, 0, 16, colornum=FG)
-        self.poswin = self.progbar.child(BWIDTH + TGAP, 0, TWIDTH)
+        self.status = self.progbar.child(self.tgap, self.tgap, 0,
+                                         self.bheight - (2 * self.tgap),
+                                         colornum=FG)
+        self.poswin = self.progbar.child(self.bwidth + self.tgap, 0,
+                                         self.twidth)
         self.duration = 0
         self.position = 0
 
     def info_bar(self):
-        self.info = self.root.child((640 - BSIZE) / 2, 48, BSIZE, BHEIGHT)
+        self.info = self.root.child((self.root.width - self.bsize) / 2,
+                                    self.vgap, self.bsize, self.bheight)
         self.info.child(colornum=BG).set_transparency(0.5)
-        self.info_title = self.info.child(width=(self.info.width - 100))
+        self.info_title = self.info.child(width=(self.info.width -
+                                                 self.twidth2))
         self.info_title.set_text(' ' + self.title, colornum=FG,
                                  flags=hme.RSRC_HALIGN_LEFT)
         self.info_time = self.info.child()
@@ -221,7 +249,7 @@ class VideoStreamer:
     def loadbar_anim(self):
         if self.loadbar:
             if self.loadbar.xpos == 1:
-                newx = 71
+                newx = self.lwidth - self.lheight - 3
             else:
                 newx = 1
             self.loadbar.set_bounds(xpos=newx, animtime=1)

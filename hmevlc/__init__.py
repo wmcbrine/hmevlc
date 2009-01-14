@@ -39,6 +39,9 @@ from hmevlc.hmevid import VideoStreamer
 
 TITLE = 'HME/VLC'
 
+GRAPHICS = ('red', 'blue', 'green')
+GRAPHICS_TEMPLATES = ('apples/%s.png', 'apples/%s-hd.png')
+
 PASSTHROUGH_EXTS = ('.mpg', '.mp4')
 TRANSCODE_EXTS = ('.mov', '.wmv', '.avi', '.asf',
                   '.flv', '.mkv', '.vob', '.m4v')
@@ -52,6 +55,7 @@ MENU_SHOUTCAST = 4
 class Hmevlc(hme.Application):
     def startup(self):
         self.using_vlc = False
+        self.hd = False
 
     def handle_device_info(self, info):
         ver = info.get('version', '')
@@ -60,6 +64,14 @@ class Hmevlc(hme.Application):
                                'with this TiVo software/hardware version.')
             time.sleep(5)
             self.active = False
+
+    def handle_resolution(self):
+        hd = (1280, 720, 1, 1)
+        self.hd = hd in self.resolutions
+        if self.hd:
+            return hd
+        else:
+            return (640, 480, 1, 1)
 
     def get_default(self, section, option, default):
         if self.config.has_option(section, option):
@@ -76,6 +88,9 @@ class Hmevlc(hme.Application):
     def handle_active(self):
         self.config = self.context.server.config
         self.positions = {}
+
+        self.graphics = [GRAPHICS_TEMPLATES[self.hd] % item
+                         for item in GRAPHICS]
 
         self.have_vlc = vlc.have(self.config)
         if self.have_vlc:
@@ -120,12 +135,12 @@ class Hmevlc(hme.Application):
         self.show_top()
 
     def show_top(self):
-        self.root.set_image('apples/red.png')
+        self.root.set_image(self.graphics[0])
         self.menu_mode = MENU_TOP
         self.set_focus(self.top_menu)
 
     def show_streams(self):
-        self.root.set_image('apples/blue.png')
+        self.root.set_image(self.graphics[1])
         self.set_focus(self.stream_menu)
 
     def live_vid(self, title):
@@ -210,7 +225,7 @@ class Hmevlc(hme.Application):
                         self.show_top()
         else:
             if focus:
-                self.root.set_image('apples/green.png')
+                self.root.set_image(self.graphics[2])
                 self.in_list = True
                 self.set_focus(self.filemenus[-1])
 
@@ -268,11 +283,11 @@ class Hmevlc(hme.Application):
 
     def handle_focus(self, focus):
         if self.menu_mode == MENU_STREAMS:
-            self.handle_focus_streams(focus, live_vid)
+            self.handle_focus_streams(focus, self.live_vid)
         elif self.menu_mode == MENU_RSS:
-            self.handle_focus_streams(focus, rss_vid)
+            self.handle_focus_streams(focus, self.rss_vid)
         elif self.menu_mode == MENU_SHOUTCAST:
-            self.handle_focus_streams(focus, shout_vid)
+            self.handle_focus_streams(focus, self.shout_vid)
         elif self.menu_mode == MENU_FILES:
             self.handle_focus_files(focus)
         else:
@@ -286,7 +301,7 @@ class Hmevlc(hme.Application):
                     elif title in self.shout_list:
                         self.handle_top_menu_shoutcast(title)
                     else:
-                        self.root.set_image('apples/green.png')
+                        self.root.set_image(self.graphics[2])
                         self.menu_mode = MENU_FILES
                         self.new_menu(title, self.config.get(title, 'dir'))
                 else:
