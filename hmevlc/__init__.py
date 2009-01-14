@@ -98,6 +98,11 @@ class Hmevlc(hme.Application):
         else:
             self.exts = PASSTHROUGH_EXTS
 
+        if self.hd:
+            self.folder = 'apples/folder-hd.png'
+        else:
+            self.folder = 'apples/folder.png'
+
         self.stream_list = []
         rss_list = []
         shout_list = []
@@ -106,7 +111,7 @@ class Hmevlc(hme.Application):
             if self.config.has_option(title, 'dir'):
                 path = self.config.get(title, 'dir')
                 if os.path.isdir(path):
-                    dir_list.append((title, 'apples/folder.png'))
+                    dir_list.append((title, self.folder))
                 else:
                     print 'Bad path:', path
             elif (self.have_vlc or
@@ -116,17 +121,17 @@ class Hmevlc(hme.Application):
                         self.get_default(title, 'icon', '')))
                 elif ET and self.config.has_option(title, 'rss'):
                     rss_list.append((title,
-                        self.get_default(title, 'icon', 'apples/folder.png')))
+                        self.get_default(title, 'icon', 'icons/rss.png')))
                 elif ET and self.config.has_option(title, 'shout_list'):
                     shout_list.append((title,
-                        self.get_default(title, 'icon', 'apples/folder.png')))
+                        self.get_default(title, 'icon', self.folder)))
 
         self.in_list = True
         self.filemenus = []
 
         dir_list = rss_list + shout_list + dir_list
         if self.stream_list:
-            dir_list = [('Live Streams', 'apples/folder.png')] + dir_list
+            dir_list = [('Live Streams', self.folder)] + dir_list
 
         self.rss_list = [x[0] for x in rss_list]
         self.shout_list = [x[0] for x in shout_list]
@@ -188,7 +193,7 @@ class Hmevlc(hme.Application):
         dirs.sort()
         files.sort()
         pos, startpos = self.positions.get(path, (0, 0))
-        a = ListView(self, title, [(i, 'apples/folder.png') for i in dirs] +
+        a = ListView(self, title, [(i, self.folder) for i in dirs] +
                                   [(i, '') for i in files], pos, startpos)
         a.basepath = path
         self.set_focus(a)

@@ -1,4 +1,4 @@
-# Apples and Oranges, v0.3
+# Apples and Oranges, v0.4
 # Copyright 2009 William McBrine
 #
 # This library is free software; you can redistribute it and/or
@@ -15,7 +15,7 @@
 # you already have dozens of copies, don't you? If not, visit gnu.org.
 
 __author__ = 'William McBrine <wmcbrine@gmail.com>'
-__version__ = '0.3'
+__version__ = '0.4'
 __license__ = 'LGPL'
 
 """ Apples and Oranges -- ListView
@@ -40,9 +40,6 @@ import time
 import hme
 
 WIPETIME = 0.5
-TITLE_HEIGHT = 64
-BAR_HEIGHT = 32
-ICON_WIDTH = 44
 
 class ListView:
     def __init__(self, app, title, items, pos=0, startpos=0, root=None):
@@ -58,7 +55,24 @@ class ListView:
         self.root = root
         self.w = root.width
         self.h = root.height
-        size = (self.h - 2 * hme.SAFE_TITLE_V - TITLE_HEIGHT) / BAR_HEIGHT
+        if self.w == 1280:
+            self.title_height = 96
+            self.bar_height = 48
+            self.fsize = 36
+            self.icon_width = 66
+            self.round_width = 24
+            self.round = 'apples/round-hd.png'
+            self.inner_offset = 2
+        else:
+            self.title_height = 64
+            self.bar_height = 32
+            self.fsize = 24
+            self.icon_width = 44
+            self.round_width = 17
+            self.round = 'apples/round.png'
+            self.inner_offset = 1
+        size = ((self.h - 2 * hme.SAFE_TITLE_V - self.title_height) /
+                self.bar_height)
         if len(items) < size:
             size = len(items)
         self.pagesize = size
@@ -69,12 +83,12 @@ class ListView:
         saw = hme.SAFE_ACTION_H
         sah = hme.SAFE_ACTION_V
         mainw = self.w - 2 * stw
-        th = TITLE_HEIGHT
-        bh = BAR_HEIGHT
+        th = self.title_height
+        bh = self.bar_height
         bw = mainw + stw
         starth = th + sth
         endh = self.h - sth
-        iconw = ICON_WIDTH
+        iconw = self.icon_width
 
         self.base = self.root.child(visible=False)
         self.titleshadow = self.base.child(stw + 4, sth + 2, mainw - 4,
@@ -82,9 +96,10 @@ class ListView:
         self.titlewin = self.base.child(stw, sth, mainw, th)
         self.base.set_translation(self.w, 0)
         self.bar = self.base.child(0, starth, bw, bh)
-        self.bar.child(width=(bw - 17), colornum=0xffff00)
-        self.bar.child(0, 1, bw - 17, bh - 2, colornum=0xaf)
-        self.bar.child(xpos=(bw - 17), image='apples/round.png')
+        self.bar.child(width=(bw - self.round_width), colornum=0xffff00)
+        self.bar.child(0, self.inner_offset, bw - self.round_width,
+                       bh - 2 * self.inner_offset, colornum=0xaf)
+        self.bar.child(xpos=(bw - self.round_width), image=self.round)
 
         self.upwin = self.base.child(bw - 6, starth - 12, 12, 12, visible=False,
                                      image='apples/up.png')
@@ -123,17 +138,18 @@ class ListView:
 
     def title_update(self, title_text):
         self.title_clear()
-        hme.Font(self.app, size=48)
+        hme.Font(self.app, size=(self.fsize * 2))
         hme.Color(self.app, 0)
         self.titleshadow.set_text(title_text, flags=hme.RSRC_VALIGN_TOP)
         hme.Color(self.app, 0x9f9f00)
         self.titlewin.set_text(title_text, flags=hme.RSRC_VALIGN_TOP)
-        hme.Font(self.app)
+        hme.Font(self.app, size=self.fsize)
         hme.Color(self.app)
 
     def pos_update(self):
-        self.bar.set_bounds(ypos=((self.pos - self.startpos) * BAR_HEIGHT +
-                                  TITLE_HEIGHT + hme.SAFE_TITLE_V))
+        self.bar.set_bounds(ypos=((self.pos - self.startpos) *
+                                  self.bar_height + self.title_height + 
+                                  hme.SAFE_TITLE_V))
 
     def down(self):
         self.pos += 1
@@ -219,6 +235,7 @@ class ListView:
 
     def handle_focus(self, focus):
         if focus:
+            hme.Font(self.app, size=self.fsize)
             self.draw()
             self.pos_update()
             self.base.set_visible()
@@ -237,3 +254,4 @@ class ListView:
                 self.base.set_translation(self.w, 0, anim)
                 time.sleep(WIPETIME)
             self.remove()
+            hme.Font(self.app)
