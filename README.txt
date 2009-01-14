@@ -44,7 +44,7 @@ different streams if they both require VLC.
 
 Changes:
 
-3.1 -- Use HD when possible.
+3.1 -- Use HD menus when possible.
 
        Wrap text in the "Loading..." screen.
 
