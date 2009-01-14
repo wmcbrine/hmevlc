@@ -61,7 +61,7 @@ class VideoStreamer:
 
     def loadwin_remove(self):
         if self.loadwin:
-            self.loadwin.resource.remove()
+            self.loadwin.children[0].resource.remove()
             self.loadwin.remove()
             self.loadwin = None
 
@@ -76,14 +76,21 @@ class VideoStreamer:
         if focus:
             hme.Color(self.app, FG)
             hme.Font(self.app, size=self.fsize)
-            self.loadwin = self.root.child(text='Loading %s...' % self.title)
+            w = self.root.width - 2 * hme.SAFE_TITLE_H
+            h = self.root.height - 2 * hme.SAFE_TITLE_V
+            self.loadwin = self.root.child(hme.SAFE_TITLE_H, hme.SAFE_TITLE_V,
+                                           w, h)
+            loadtext = self.loadwin.child(text='Loading %s...' % self.title,
+                                          height=(h / 2),
+                                          flags=(hme.RSRC_TEXT_WRAP |
+                                                 hme.RSRC_VALIGN_BOTTOM))
             self.root.set_color(BG)
             if self.needs_vlc:
                 self.start_vlc()
             else:
                 self.stream = hme.Stream(self.app, self.stream_url)
-            loadback = self.loadwin.child((self.root.width - self.lwidth) / 2,
-                                          self.root.height / 2 + self.fsize,
+            loadback = self.loadwin.child((w - self.lwidth) / 2,
+                                          h / 2 + self.fsize,
                                           self.lwidth, self.lheight + 4,
                                           colornum=BG2)
             self.loadbar = loadback.child(2, 2, self.lheight, self.lheight,
