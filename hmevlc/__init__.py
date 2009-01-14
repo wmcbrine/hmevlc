@@ -129,9 +129,10 @@ class Hmevlc(hme.Application):
         self.in_list = True
         self.filemenus = []
 
-        dir_list = rss_list + shout_list + dir_list
+        items = []
         if self.stream_list:
-            dir_list = [('Live Streams', self.folder)] + dir_list
+            items.append(('Live Streams', self.folder))
+        items += rss_list + shout_list + dir_list
 
         self.rss_list = [x[0] for x in rss_list]
         self.shout_list = [x[0] for x in shout_list]
