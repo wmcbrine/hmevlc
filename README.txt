@@ -44,7 +44,11 @@ different streams if they both require VLC.
 
 Changes:
 
-3.1 -- Use HD when possible; separate RSS icon.
+3.1 -- Use HD when possible.
+
+       Wrap text in the "Loading..." screen.
+
+       Separate RSS icon.
 
 3.0 -- Support for iTunes-style RSS feeds, and Shoutcast TV. See the
        included config.ini for configuration examples. Mostly due to
