@@ -52,25 +52,11 @@ class VideoStreamer:
         self.sound = app.sound
         self.send_key = app.send_key
         if self.app.hd:
-            self.bheight = 48
-            self.fsize = 36
-            self.tgap = 12
-            self.vgap = 72
-            self.twidth = 216
-            self.twidth2 = 150
-            self.bwidth = 859
-            self.lwidth = 168
-            self.lheight = 15
+            sizes = (48, 36, 12, 72, 216, 150, 859, 168, 15)
         else:
-            self.bheight = 32
-            self.fsize = 24
-            self.tgap = 8
-            self.vgap = 48
-            self.twidth = 144
-            self.twidth2 = 100
-            self.bwidth = 370
-            self.lwidth = 84
-            self.lheight = 10
+            sizes = (32, 24, 8, 48, 144, 100, 370, 84, 10)
+        (self.bheight, self.fsize, self.tgap, self.vgap, self.twidth,
+         self.twidth2, self.bwidth, self.lwidth, self.lheight) = sizes
         self.bsize = self.bwidth + self.tgap + self.twidth + 1
 
     def loadwin_remove(self):
