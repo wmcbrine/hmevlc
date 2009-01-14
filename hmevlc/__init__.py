@@ -137,7 +137,7 @@ class Hmevlc(hme.Application):
         self.rss_list = [x[0] for x in rss_list]
         self.shout_list = [x[0] for x in shout_list]
 
-        self.top_menu = ListView(self, TITLE, dir_list)
+        self.top_menu = ListView(self, TITLE, items)
         self.show_top()
 
     def show_top(self):
