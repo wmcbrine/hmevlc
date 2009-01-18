@@ -257,9 +257,8 @@ class Hmevlc(hme.Application):
                 title = station.get('ct').strip()
                 if not title:
                     title = station.get('name').strip()
-                id = station.get('id')
                 stations.append((title, ''))
-                ids.append(id)
+                ids.append(station.get('id'))
         self.menu_mode = MENU_SHOUTCAST
         self.shout_items = ids
         pos, startpos = self.positions.get(shout_title, (0, 0))
@@ -277,10 +276,11 @@ class Hmevlc(hme.Application):
             return
         titles, urls = [], []
         for item in tree.getiterator('item'):
-            title = item.find('title').text.strip()
-            url = item.find('enclosure').get('url')
-            titles.append((title, ''))
-            urls.append(url)
+            enc = item.find('enclosure')
+            if enc is not None and enc.get('type').startswith('video'):
+                title = item.findtext('title').strip()
+                titles.append((title, ''))
+                urls.append(enc.get('url'))
         self.menu_mode = MENU_RSS
         self.rss_items = urls
         pos, startpos = self.positions.get(rss_title, (0, 0))
