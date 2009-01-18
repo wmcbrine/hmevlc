@@ -20,6 +20,7 @@ __author__ = 'William McBrine <wmcbrine@gmail.com>'
 __version__ = '3.1'
 __license__ = 'GPL'
 
+import os
 import time
 
 import hme
@@ -37,7 +38,8 @@ FG = 0xcfcfcf
 TIMEFORMAT = '%I:%M %p '
 
 class VideoStreamer:
-    def __init__(self, app, title, stream_url, needs_vlc=False):
+    def __init__(self, app, title, stream_url, needs_vlc=False,
+                 stream_mime=''):
         self.app = app
         self.root = app.root
         self.clear_sent = 0
@@ -48,6 +50,11 @@ class VideoStreamer:
         self.stream = None
         self.title = title
         self.stream_url = stream_url
+        if stream_mime:
+            self.stream_mime = stream_mime
+        else:
+            ext = os.path.splitext(stream_url)[1].lower()
+            self.stream_mime = app.context.MIMETYPES.get(ext, 'video/mpeg')
         self.needs_vlc = needs_vlc
         self.sound = app.sound
         self.send_key = app.send_key
@@ -88,7 +95,8 @@ class VideoStreamer:
             if self.needs_vlc:
                 self.start_vlc()
             else:
-                self.stream = hme.Stream(self.app, self.stream_url)
+                self.stream = hme.Stream(self.app, self.stream_url,
+                                         self.stream_mime)
             loadback = self.loadwin.child((w - self.lwidth) / 2,
                                           h / 2 + self.fsize,
                                           self.lwidth, self.lheight + 4,

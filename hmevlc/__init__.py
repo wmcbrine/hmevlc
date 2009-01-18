@@ -42,10 +42,6 @@ TITLE = 'HME/VLC'
 GRAPHICS = ('red', 'blue', 'green')
 GRAPHICS_TEMPLATES = ('apples/%s.png', 'apples/%s-hd.png')
 
-PASSTHROUGH_EXTS = ('.mpg', '.mp4')
-TRANSCODE_EXTS = ('.mov', '.wmv', '.avi', '.asf',
-                  '.flv', '.mkv', '.vob', '.m4v')
-
 MENU_TOP = 0
 MENU_STREAMS = 1
 MENU_FILES = 2
@@ -93,10 +89,14 @@ class Hmevlc(hme.Application):
                          for item in GRAPHICS]
 
         self.have_vlc = vlc.have(self.config)
+        self.pass_exts = [x for x in self.context.MIMETYPES
+                          if self.context.MIMETYPES[x] in
+                          ('video/mpeg', 'video/mp4')]
         if self.have_vlc:
-            self.exts = PASSTHROUGH_EXTS + TRANSCODE_EXTS
+            self.exts = [x for x in self.context.MIMETYPES
+                         if self.context.MIMETYPES[x].startswith('video')]
         else:
-            self.exts = PASSTHROUGH_EXTS
+            self.exts = self.pass_exts
 
         if self.hd:
             self.folder = 'apples/folder-hd.png'
@@ -211,7 +211,7 @@ class Hmevlc(hme.Application):
                         self.new_menu(a.selected[1], newpath)
                     else:
                         need_vlc = (os.path.splitext(newpath)[1].lower()
-                                    not in PASSTHROUGH_EXTS)
+                                    not in self.pass_exts)
                         if need_vlc:
                             url = newpath
                         else:
