@@ -1,4 +1,4 @@
-# Apples and Oranges, v0.4
+# Apples and Oranges, v0.5
 # Copyright 2009 William McBrine
 #
 # This library is free software; you can redistribute it and/or
@@ -15,23 +15,22 @@
 # you already have dozens of copies, don't you? If not, visit gnu.org.
 
 __author__ = 'William McBrine <wmcbrine@gmail.com>'
-__version__ = '0.4'
+__version__ = '0.5'
 __license__ = 'LGPL'
 
 """ Apples and Oranges -- ListView
 
     The ListView class creates a simple, navigable list, in a style
     similar to TiVo's native menus. It's initialized with a title and a
-    list of tuples, each tuple containing the text for a line, and an
-    optional icon (use None or '' for no icon). The starting selector 
-    and list positions can also be given; they default to 0. You may 
-    also specify the root window.
+    list of dicts, each dict containing the 'title' for a line, and an
+    optional 'icon'. The starting selector and list positions can also
+    be given; they default to 0. You may also specify the root window.
 
     Create the instance, then give it focus via set_focus(). When
     finished, it returns control to the app in the same way; check the
     results in the app's handle_focus(). The "selected" attribute
     contains None if the user backed out of the menu; otherwise it holds
-    a tuple of the item number and text selected.
+    the dict of the item selected.
 
 """
 
@@ -56,21 +55,15 @@ class ListView:
         self.w = root.width
         self.h = root.height
         if self.w == 1280:
-            self.title_height = 96
-            self.bar_height = 48
-            self.fsize = 36
-            self.icon_width = 66
-            self.round_width = 24
+            sizes = (96, 48, 36, 66, 24, 2)
             self.round = 'apples/round-hd.png'
-            self.inner_offset = 2
         else:
-            self.title_height = 64
-            self.bar_height = 32
-            self.fsize = 24
-            self.icon_width = 44
-            self.round_width = 17
+            sizes = (64, 32, 24, 44, 17, 1)
             self.round = 'apples/round.png'
-            self.inner_offset = 1
+
+        (self.title_height, self.bar_height, self.fsize, 
+         self.icon_width, self.round_width, self.inner_offset) = sizes
+
         size = ((self.h - 2 * hme.SAFE_TITLE_V - self.title_height) /
                 self.bar_height)
         if len(items) < size:
@@ -120,9 +113,9 @@ class ListView:
         for i, item in enumerate(self.items[self.startpos:self.startpos +
                                             self.pagesize]):
             self.page[i][0].remove_resource()
-            self.page[i][0].set_text(item[0], flags=hme.RSRC_HALIGN_LEFT)
-            if item[1]:
-                self.page[i][1].set_image(item[1])
+            self.page[i][0].set_text(item['title'], flags=hme.RSRC_HALIGN_LEFT)
+            if 'icon' in item:
+                self.page[i][1].set_image(item['icon'])
             else:
                 self.page[i][1].clear_resource()
         hme.Color(self.app)
@@ -223,7 +216,7 @@ class ListView:
         elif code in (hme.KEY_RIGHT, hme.KEY_SELECT, hme.KEY_PLAY):
             self.sound('select')
             if self.items:
-                self.selected = (self.pos, self.items[self.pos][0])
+                self.selected = self.items[self.pos]
             self.app.set_focus(self.app)
         elif code == hme.KEY_TIVO:
             self.title_update(self.title)
