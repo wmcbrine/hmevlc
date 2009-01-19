@@ -55,6 +55,8 @@ class VideoStreamer:
         else:
             ext = os.path.splitext(stream_url)[1].lower()
             self.stream_mime = app.context.MIMETYPES.get(ext, 'video/mpeg')
+        if self.stream_mime == 'video/x-tivo-mpeg':
+            self.stream_mime = 'video/mpeg'
         self.needs_vlc = needs_vlc
         self.sound = app.sound
         self.send_key = app.send_key

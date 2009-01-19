@@ -91,7 +91,7 @@ class Hmevlc(hme.Application):
         self.have_vlc = vlc.have(self.config)
         self.pass_exts = [x for x in self.context.MIMETYPES
                           if self.context.MIMETYPES[x] in
-                          ('video/mpeg', 'video/mp4')]
+                          ('video/mpeg', 'video/mp4', 'video/x-tivo-mpeg')]
         if self.have_vlc:
             self.exts = [x for x in self.context.MIMETYPES
                          if self.context.MIMETYPES[x].startswith('video')]
