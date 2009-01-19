@@ -1,4 +1,4 @@
-# HME/VLC video streamer, v3.1
+# HME/VLC video streamer, v3.2
 # Copyright 2009 William McBrine
 #
 # This program is free software; you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 """ Video streamer class """
 
 __author__ = 'William McBrine <wmcbrine@gmail.com>'
-__version__ = '3.1'
+__version__ = '3.2'
 __license__ = 'GPL'
 
 import os

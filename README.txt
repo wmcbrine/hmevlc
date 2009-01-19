@@ -1,6 +1,6 @@
-HME/VLC video streamer, v3.1
+HME/VLC video streamer, v3.2
 by William McBrine <wmcbrine@gmail.com>
-January 14, 2009
+January 19, 2009
 
 A simple streaming HME server for the TiVo Series 3 or HD.
 
@@ -43,6 +43,14 @@ overhead. However, two different TiVos can't simultaneously watch two
 different streams if they both require VLC.
 
 Changes:
+
+3.2 -- Files with the extensions ".tivo", ".m4v", ".mpeg", ".vob", and
+       ".m2v" are now passed through without reencoding (in addition to
+       the old ones ".mpg" and ".mp4"). The supported extension list is
+       now derived from the list of MIME types in start.py.
+
+       Skip items in RSS feeds with no enclosures, or with enclosures 
+       not of type video, since some feeds include mixed media.
 
 3.1 -- Use HD menus when possible.
 
