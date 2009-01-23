@@ -108,19 +108,23 @@ class Hmevlc(hme.Application):
         shout_list = []
         dir_list = []
         for title in sorted(self.config.sections()):
-            if self.config.has_option(title, 'dir'):
-                path = self.config.get(title, 'dir')
-                if os.path.isdir(path):
-                    dir_list.append({'title': title, 'icon': self.folder})
-                else:
-                    print 'Bad path:', path
-            elif (self.have_vlc or
-                  not self.get_defaultbool(title, 'needs_vlc', False)):
-                item = {'title': title}
+            needs_vlc = self.get_defaultbool(title, 'needs_vlc', False)
+            if self.have_vlc or not needs_vlc:
+                item = {'title': title, 'needs_vlc': needs_vlc}
                 icon = self.get_default(title, 'icon', '')
                 if icon:
                     item['icon'] = icon
-                if self.config.has_option(title, 'url'):
+                if self.config.has_option(title, 'dir'):
+                    path = self.config.get(title, 'dir')
+                    if os.path.isdir(path):
+                        if not icon in item:
+                            item['icon'] = self.folder
+                        item['dir'] = path
+                        dir_list.append(item)
+                    else:
+                        print 'Bad path:', path
+                elif self.config.has_option(title, 'url'):
+                    item['url'] = self.config.get(title, 'url')
                     self.stream_list.append(item)
                 elif ET and self.config.has_option(title, 'rss'):
                     if not icon in item:
@@ -154,25 +158,25 @@ class Hmevlc(hme.Application):
         self.root.set_image(self.graphics[1])
         self.set_focus(self.stream_menu)
 
-    def live_vid(self, title):
-        return VideoStreamer(self, title, self.config.get(title, 'url'),
-                             self.get_defaultbool(title, 'needs_vlc', False))
+    def live_vid(self, item):
+        return VideoStreamer(self, item['title'], item['url'],
+                             item['needs_vlc'])
 
-    def shout_vid(self, title):
-        return VideoStreamer(self, title,
-            self.config.get(self.stream_menu.title, 'shout_tune') +
-            self.stream_menu.selected['id'],
+    def shout_vid(self, item):
+        return VideoStreamer(self, item['title'],
+            self.config.get(self.stream_menu.title, 'shout_tune') + item['id'],
             self.get_defaultbool(self.stream_menu.title, 'needs_vlc', False))
 
-    def rss_vid(self, title):
-        return VideoStreamer(self, title, self.stream_menu.selected['url'],
+    def rss_vid(self, item):
+        return VideoStreamer(self, item['title'], item['url'],
             self.get_defaultbool(self.stream_menu.title, 'needs_vlc', False))
 
     def handle_focus_streams(self, focus, func):
         if self.in_list:
             if focus:
-                if self.stream_menu.selected:
-                    vid = func(self.stream_menu.selected['title'])
+                s = self.stream_menu.selected
+                if s:
+                    vid = func(s)
                     self.in_list = False
                     self.set_focus(vid)
                 else:
@@ -215,7 +219,8 @@ class Hmevlc(hme.Application):
                     if os.path.isdir(newpath):
                         self.new_menu(title, newpath)
                     else:
-                        need_vlc = (os.path.splitext(newpath)[1].lower()
+                        need_vlc = (self.files_need_vlc or
+                                    os.path.splitext(newpath)[1].lower()
                                     not in self.pass_exts)
                         if need_vlc:
                             url = newpath
@@ -299,8 +304,9 @@ class Hmevlc(hme.Application):
             self.handle_focus_files(focus)
         else:
             if focus:
-                if self.top_menu.selected:
-                    title = self.top_menu.selected['title']
+                s = self.top_menu.selected
+                if s:
+                    title = s['title']
                     if title == 'Live Streams':
                         self.handle_top_menu_streams()
                     elif title in self.rss_list:
@@ -310,7 +316,8 @@ class Hmevlc(hme.Application):
                     else:
                         self.root.set_image(self.graphics[2])
                         self.menu_mode = MENU_FILES
-                        self.new_menu(title, self.config.get(title, 'dir'))
+                        self.files_need_vlc = s['needs_vlc']
+                        self.new_menu(title, s['dir'])
                 else:
                     self.active = False
 
