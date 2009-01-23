@@ -45,8 +45,6 @@ GRAPHICS_TEMPLATES = ('apples/%s.png', 'apples/%s-hd.png')
 MENU_TOP = 0
 MENU_STREAMS = 1
 MENU_FILES = 2
-MENU_RSS = 3
-MENU_SHOUTCAST = 4
 
 class Hmevlc(hme.Application):
     def startup(self):
@@ -127,10 +125,13 @@ class Hmevlc(hme.Application):
                     item['url'] = self.config.get(title, 'url')
                     self.stream_list.append(item)
                 elif ET and self.config.has_option(title, 'rss'):
+                    item['rss'] = self.config.get(title, 'rss')
                     if not icon in item:
                         item['icon'] = 'icons/rss.png'
                     rss_list.append(item)
                 elif ET and self.config.has_option(title, 'shout_list'):
+                    item['shout_list'] = self.config.get(title, 'shout_list')
+                    item['shout_tune'] = self.config.get(title, 'shout_tune')
                     if not icon in item:
                         item['icon'] = self.folder
                     shout_list.append(item)
@@ -142,9 +143,6 @@ class Hmevlc(hme.Application):
         if self.stream_list:
             items.append({'title': 'Live Streams', 'icon': self.folder})
         items += rss_list + shout_list + dir_list
-
-        self.rss_list = [x['title'] for x in rss_list]
-        self.shout_list = [x['title'] for x in shout_list]
 
         self.top_menu = ListView(self, TITLE, items)
         self.show_top()
@@ -158,25 +156,13 @@ class Hmevlc(hme.Application):
         self.root.set_image(self.graphics[1])
         self.set_focus(self.stream_menu)
 
-    def live_vid(self, item):
-        return VideoStreamer(self, item['title'], item['url'],
-                             item['needs_vlc'])
-
-    def shout_vid(self, item):
-        return VideoStreamer(self, item['title'],
-            self.config.get(self.stream_menu.title, 'shout_tune') + item['id'],
-            self.get_defaultbool(self.stream_menu.title, 'needs_vlc', False))
-
-    def rss_vid(self, item):
-        return VideoStreamer(self, item['title'], item['url'],
-            self.get_defaultbool(self.stream_menu.title, 'needs_vlc', False))
-
-    def handle_focus_streams(self, focus, func):
+    def handle_focus_streams(self, focus):
         if self.in_list:
             if focus:
                 s = self.stream_menu.selected
                 if s:
-                    vid = func(s)
+                    vid = VideoStreamer(self, s['title'], s['url'],
+                                        s['needs_vlc'])
                     self.in_list = False
                     self.set_focus(vid)
                 else:
@@ -252,9 +238,11 @@ class Hmevlc(hme.Application):
                                     self.stream_list, pos, startpos)
         self.show_streams()
 
-    def handle_top_menu_shoutcast(self, shout_title):
-        shout_url = self.config.get(shout_title, 'shout_list')
-        feed = urllib.urlopen(shout_url)
+    def handle_top_menu_shoutcast(self, shout_item):
+        shout_title = shout_item['title']
+        shout_tune = shout_item['shout_tune']
+        needs_vlc = shout_item['needs_vlc']
+        feed = urllib.urlopen(shout_item['shout_list'])
         try:
             tree = ET.parse(feed)
         except Exception, msg:
@@ -267,15 +255,17 @@ class Hmevlc(hme.Application):
                 title = station.get('ct').strip()
                 if not title:
                     title = station.get('name').strip()
-                stations.append({'title': title, 'id': station.get('id')})
-        self.menu_mode = MENU_SHOUTCAST
+                stations.append({'title': title, 'url': shout_tune +
+                                 station.get('id'), 'needs_vlc': needs_vlc})
+        self.menu_mode = MENU_STREAMS
         pos, startpos = self.positions.get(shout_title, (0, 0))
         self.stream_menu = ListView(self, shout_title, stations, pos, startpos)
         self.show_streams()
 
-    def handle_top_menu_rss(self, rss_title):
-        rss_url = self.config.get(rss_title, 'rss')
-        feed = urllib.urlopen(rss_url)
+    def handle_top_menu_rss(self, rss_item):
+        rss_title = rss_item['title']
+        needs_vlc = rss_item['needs_vlc']
+        feed = urllib.urlopen(rss_item['rss'])
         try:
             tree = ET.parse(feed)
         except Exception, msg:
@@ -287,37 +277,32 @@ class Hmevlc(hme.Application):
             enc = item.find('enclosure')
             if enc is not None and enc.get('type').startswith('video'):
                 items.append({'title': item.findtext('title').strip(),
-                              'url': enc.get('url')})
-        self.menu_mode = MENU_RSS
+                              'url': enc.get('url'), 'needs_vlc': needs_vlc})
+        self.menu_mode = MENU_STREAMS
         pos, startpos = self.positions.get(rss_title, (0, 0))
         self.stream_menu = ListView(self, rss_title, items, pos, startpos)
         self.show_streams()
 
     def handle_focus(self, focus):
         if self.menu_mode == MENU_STREAMS:
-            self.handle_focus_streams(focus, self.live_vid)
-        elif self.menu_mode == MENU_RSS:
-            self.handle_focus_streams(focus, self.rss_vid)
-        elif self.menu_mode == MENU_SHOUTCAST:
-            self.handle_focus_streams(focus, self.shout_vid)
+            self.handle_focus_streams(focus)
         elif self.menu_mode == MENU_FILES:
             self.handle_focus_files(focus)
         else:
             if focus:
                 s = self.top_menu.selected
                 if s:
-                    title = s['title']
-                    if title == 'Live Streams':
+                    if s['title'] == 'Live Streams':
                         self.handle_top_menu_streams()
-                    elif title in self.rss_list:
-                        self.handle_top_menu_rss(title)
-                    elif title in self.shout_list:
-                        self.handle_top_menu_shoutcast(title)
+                    elif 'rss' in s:
+                        self.handle_top_menu_rss(s)
+                    elif 'shout_list' in s:
+                        self.handle_top_menu_shoutcast(s)
                     else:
                         self.root.set_image(self.graphics[2])
                         self.menu_mode = MENU_FILES
                         self.files_need_vlc = s['needs_vlc']
-                        self.new_menu(title, s['dir'])
+                        self.new_menu(s['title'], s['dir'])
                 else:
                     self.active = False
 
