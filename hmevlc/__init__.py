@@ -160,23 +160,21 @@ class Hmevlc(hme.Application):
         self.root.set_image(self.graphics[1])
         self.set_focus(self.stream_menu)
 
-    def handle_focus_streams(self, focus):
+    def handle_focus_streams(self):
         if self.in_list:
-            if focus:
-                s = self.stream_menu.selected
-                if s:
-                    vid = VideoStreamer(self, s['title'], s['url'],
-                                        s['needs_vlc'])
-                    self.in_list = False
-                    self.set_focus(vid)
-                else:
-                    self.positions[self.stream_menu.title] = (
-                        self.stream_menu.pos, self.stream_menu.startpos)
-                    self.show_top()
+            s = self.stream_menu.selected
+            if s:
+                vid = VideoStreamer(self, s['title'], s['url'],
+                                    s['needs_vlc'])
+                self.in_list = False
+                self.set_focus(vid)
+            else:
+                self.positions[self.stream_menu.title] = (
+                    self.stream_menu.pos, self.stream_menu.startpos)
+                self.show_top()
         else:
-            if focus:
-                self.in_list = True
-                self.show_streams()
+            self.in_list = True
+            self.show_streams()
 
     def new_menu(self, title, path):
         ld = os.listdir(path)
@@ -199,41 +197,39 @@ class Hmevlc(hme.Application):
         self.filemenus.append(a)
         self.in_list = True
 
-    def handle_focus_files(self, focus):
+    def handle_focus_files(self):
         if self.in_list:
-            if focus:
-                a = self.filemenus[-1]
-                if a.selected:
-                    title = a.selected['title']
-                    newpath = os.path.join(a.basepath, title)
-                    if os.path.isdir(newpath):
-                        self.new_menu(title, newpath)
-                    else:
-                        need_vlc = (self.files_need_vlc or
-                                    os.path.splitext(newpath)[1].lower()
-                                    not in self.pass_exts)
-                        if need_vlc:
-                            url = newpath
-                        else:
-                            base = self.context.server.datapath
-                            host = self.context.headers['host']
-                            newpath = newpath.replace(base, '', 1)
-                            url = 'http://%s/%s' % (host, urllib.quote(newpath))
-                        vid = VideoStreamer(self, title, url, need_vlc)
-                        self.in_list = False
-                        self.set_focus(vid)
+            a = self.filemenus[-1]
+            if a.selected:
+                title = a.selected['title']
+                newpath = os.path.join(a.basepath, title)
+                if os.path.isdir(newpath):
+                    self.new_menu(title, newpath)
                 else:
-                    self.positions[a.basepath] = (a.pos, a.startpos)
-                    self.filemenus.pop()
-                    if self.filemenus:
-                        self.set_focus(self.filemenus[-1])
+                    need_vlc = (self.files_need_vlc or
+                                os.path.splitext(newpath)[1].lower()
+                                not in self.pass_exts)
+                    if need_vlc:
+                        url = newpath
                     else:
-                        self.show_top()
+                        base = self.context.server.datapath
+                        host = self.context.headers['host']
+                        newpath = newpath.replace(base, '', 1)
+                        url = 'http://%s/%s' % (host, urllib.quote(newpath))
+                    vid = VideoStreamer(self, title, url, need_vlc)
+                    self.in_list = False
+                    self.set_focus(vid)
+            else:
+                self.positions[a.basepath] = (a.pos, a.startpos)
+                self.filemenus.pop()
+                if self.filemenus:
+                    self.set_focus(self.filemenus[-1])
+                else:
+                    self.show_top()
         else:
-            if focus:
-                self.root.set_image(self.graphics[2])
-                self.in_list = True
-                self.set_focus(self.filemenus[-1])
+            self.root.set_image(self.graphics[2])
+            self.in_list = True
+            self.set_focus(self.filemenus[-1])
 
     def top_menu_live(self, live):
         self.menu_mode = MENU_STREAMS
@@ -295,12 +291,12 @@ class Hmevlc(hme.Application):
         self.new_menu(share['title'], share['dir'])
 
     def handle_focus(self, focus):
-        if self.menu_mode == MENU_STREAMS:
-            self.handle_focus_streams(focus)
-        elif self.menu_mode == MENU_FILES:
-            self.handle_focus_files(focus)
-        else:
-            if focus:
+        if focus:
+            if self.menu_mode == MENU_STREAMS:
+                self.handle_focus_streams()
+            elif self.menu_mode == MENU_FILES:
+                self.handle_focus_files()
+            else:
                 s = self.top_menu.selected
                 if s:
                     s['func'](s)
