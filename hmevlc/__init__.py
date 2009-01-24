@@ -140,7 +140,6 @@ class Hmevlc(hme.Application):
                     shout_list.append(item)
 
         self.in_list = True
-        self.filemenus = []
 
         items = []
         if self.stream_list:
@@ -148,13 +147,13 @@ class Hmevlc(hme.Application):
                           'func': self.top_menu_live})
         items += rss_list + shout_list + dir_list
 
-        self.top_menu = ListView(self, TITLE, items)
+        self.menus = [ListView(self, TITLE, items)]
         self.show_top()
 
     def show_top(self):
         self.root.set_image(self.graphics[0])
         self.menu_mode = MENU_TOP
-        self.set_focus(self.top_menu)
+        self.set_focus(self.menus[0])
 
     def show_streams(self):
         self.root.set_image(self.graphics[1])
@@ -194,12 +193,12 @@ class Hmevlc(hme.Application):
                                   [{'title': i} for i in files], pos, startpos)
         a.basepath = path
         self.set_focus(a)
-        self.filemenus.append(a)
+        self.menus.append(a)
         self.in_list = True
 
     def handle_focus_files(self):
         if self.in_list:
-            a = self.filemenus[-1]
+            a = self.menus[-1]
             if a.selected:
                 title = a.selected['title']
                 newpath = os.path.join(a.basepath, title)
@@ -221,15 +220,15 @@ class Hmevlc(hme.Application):
                     self.set_focus(vid)
             else:
                 self.positions[a.basepath] = (a.pos, a.startpos)
-                self.filemenus.pop()
-                if self.filemenus:
-                    self.set_focus(self.filemenus[-1])
+                self.menus.pop()
+                if len(self.menus) > 1:
+                    self.set_focus(self.menus[-1])
                 else:
                     self.show_top()
         else:
             self.root.set_image(self.graphics[2])
             self.in_list = True
-            self.set_focus(self.filemenus[-1])
+            self.set_focus(self.menus[-1])
 
     def top_menu_live(self, live):
         self.menu_mode = MENU_STREAMS
@@ -297,7 +296,7 @@ class Hmevlc(hme.Application):
             elif self.menu_mode == MENU_FILES:
                 self.handle_focus_files()
             else:
-                s = self.top_menu.selected
+                s = self.menus[-1].selected
                 if s:
                     s['func'](s)
                 else:
