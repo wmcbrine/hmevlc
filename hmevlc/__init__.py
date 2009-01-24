@@ -113,6 +113,7 @@ class Hmevlc(hme.Application):
                 if icon:
                     item['icon'] = icon
                 if self.config.has_option(title, 'dir'):
+                    item['func'] = self.top_menu_files
                     path = self.config.get(title, 'dir')
                     if os.path.isdir(path):
                         if not icon in item:
@@ -126,12 +127,14 @@ class Hmevlc(hme.Application):
                     self.stream_list.append(item)
                 elif ET and self.config.has_option(title, 'rss'):
                     item['rss'] = self.config.get(title, 'rss')
+                    item['func'] = self.top_menu_rss
                     if not icon in item:
                         item['icon'] = 'icons/rss.png'
                     rss_list.append(item)
                 elif ET and self.config.has_option(title, 'shout_list'):
                     item['shout_list'] = self.config.get(title, 'shout_list')
                     item['shout_tune'] = self.config.get(title, 'shout_tune')
+                    item['func'] = self.top_menu_shoutcast
                     if not icon in item:
                         item['icon'] = self.folder
                     shout_list.append(item)
@@ -141,7 +144,8 @@ class Hmevlc(hme.Application):
 
         items = []
         if self.stream_list:
-            items.append({'title': 'Live Streams', 'icon': self.folder})
+            items.append({'title': 'Live Streams', 'icon': self.folder,
+                          'func': self.top_menu_live})
         items += rss_list + shout_list + dir_list
 
         self.top_menu = ListView(self, TITLE, items)
@@ -231,10 +235,11 @@ class Hmevlc(hme.Application):
                 self.in_list = True
                 self.set_focus(self.filemenus[-1])
 
-    def top_menu_live(self):
+    def top_menu_live(self, live):
         self.menu_mode = MENU_STREAMS
-        pos, startpos = self.positions.get('Live Streams', (0, 0))
-        self.stream_menu = ListView(self, 'Live Streams',
+        title = live['title']
+        pos, startpos = self.positions.get(title, (0, 0))
+        self.stream_menu = ListView(self, title,
                                     self.stream_list, pos, startpos)
         self.show_streams()
 
@@ -283,6 +288,12 @@ class Hmevlc(hme.Application):
         self.stream_menu = ListView(self, rss_title, items, pos, startpos)
         self.show_streams()
 
+    def top_menu_files(self, share):
+        self.root.set_image(self.graphics[2])
+        self.menu_mode = MENU_FILES
+        self.files_need_vlc = share['needs_vlc']
+        self.new_menu(share['title'], share['dir'])
+
     def handle_focus(self, focus):
         if self.menu_mode == MENU_STREAMS:
             self.handle_focus_streams(focus)
@@ -292,17 +303,7 @@ class Hmevlc(hme.Application):
             if focus:
                 s = self.top_menu.selected
                 if s:
-                    if s['title'] == 'Live Streams':
-                        self.top_menu_live()
-                    elif 'rss' in s:
-                        self.top_menu_rss(s)
-                    elif 'shout_list' in s:
-                        self.top_menu_shoutcast(s)
-                    else:
-                        self.root.set_image(self.graphics[2])
-                        self.menu_mode = MENU_FILES
-                        self.files_need_vlc = s['needs_vlc']
-                        self.new_menu(s['title'], s['dir'])
+                    s['func'](s)
                 else:
                     self.active = False
 
