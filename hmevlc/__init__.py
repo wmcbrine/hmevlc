@@ -153,23 +153,24 @@ class Hmevlc(hme.Application):
     def show_top(self):
         self.root.set_image(self.graphics[0])
         self.menu_mode = MENU_TOP
-        self.set_focus(self.menus[0])
+        self.set_focus(self.menus[-1])
 
     def show_streams(self):
         self.root.set_image(self.graphics[1])
-        self.set_focus(self.stream_menu)
+        self.set_focus(self.menus[-1])
 
     def handle_focus_streams(self):
         if self.in_list:
-            s = self.stream_menu.selected
+            s = self.menus[-1].selected
             if s:
                 vid = VideoStreamer(self, s['title'], s['url'],
                                     s['needs_vlc'])
                 self.in_list = False
                 self.set_focus(vid)
             else:
-                self.positions[self.stream_menu.title] = (
-                    self.stream_menu.pos, self.stream_menu.startpos)
+                self.positions[self.menus[-1].title] = (
+                    self.menus[-1].pos, self.menus[-1].startpos)
+                self.menus.pop()
                 self.show_top()
         else:
             self.in_list = True
@@ -234,8 +235,8 @@ class Hmevlc(hme.Application):
         self.menu_mode = MENU_STREAMS
         title = live['title']
         pos, startpos = self.positions.get(title, (0, 0))
-        self.stream_menu = ListView(self, title,
-                                    self.stream_list, pos, startpos)
+        self.menus.append(ListView(self, title,
+                                   self.stream_list, pos, startpos))
         self.show_streams()
 
     def top_menu_shoutcast(self, shout_item):
@@ -259,7 +260,7 @@ class Hmevlc(hme.Application):
                                  station.get('id'), 'needs_vlc': needs_vlc})
         self.menu_mode = MENU_STREAMS
         pos, startpos = self.positions.get(shout_title, (0, 0))
-        self.stream_menu = ListView(self, shout_title, stations, pos, startpos)
+        self.menus.append(ListView(self, shout_title, stations, pos, startpos))
         self.show_streams()
 
     def top_menu_rss(self, rss_item):
@@ -280,7 +281,7 @@ class Hmevlc(hme.Application):
                               'url': enc.get('url'), 'needs_vlc': needs_vlc})
         self.menu_mode = MENU_STREAMS
         pos, startpos = self.positions.get(rss_title, (0, 0))
-        self.stream_menu = ListView(self, rss_title, items, pos, startpos)
+        self.menus.append(ListView(self, rss_title, items, pos, startpos))
         self.show_streams()
 
     def top_menu_files(self, share):
