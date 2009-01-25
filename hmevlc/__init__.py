@@ -203,7 +203,6 @@ class Hmevlc(hme.Application):
         self.push_menu(rss['title'], self.rss_list, BLUE)
 
     def top_menu_shoutcast(self, shout_item):
-        shout_title = shout_item['title']
         shout_tune = shout_item['shout_tune']
         needs_vlc = shout_item['needs_vlc']
         feed = urllib.urlopen(shout_item['shout_list'])
@@ -222,10 +221,9 @@ class Hmevlc(hme.Application):
                 stations.append({'title': title, 'url': shout_tune +
                                  station.get('id'), 'needs_vlc': needs_vlc,
                                  'func': self.handle_focus_streams})
-        self.push_menu(shout_title, stations, BLUE)
+        self.push_menu(shout_item['title'], stations, BLUE)
 
     def new_menu_rss(self, rss_item):
-        rss_title = rss_item['title']
         needs_vlc = rss_item['needs_vlc']
         feed = urllib.urlopen(rss_item['rss'])
         try:
@@ -241,7 +239,7 @@ class Hmevlc(hme.Application):
                 items.append({'title': item.findtext('title').strip(),
                               'url': enc.get('url'), 'needs_vlc': needs_vlc,
                               'func': self.handle_focus_streams})
-        self.push_menu(rss_title, items, BLUE)
+        self.push_menu(rss_item['title'], items, BLUE)
 
     def top_menu_files(self, share):
         self.files_need_vlc = share['needs_vlc']
