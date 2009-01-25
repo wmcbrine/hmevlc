@@ -98,7 +98,7 @@ class Hmevlc(hme.Application):
             self.folder = 'apples/folder.png'
 
         self.stream_list = []
-        rss_list = []
+        self.rss_list = []
         shout_list = []
         dir_list = []
         for title in sorted(self.config.sections()):
@@ -124,10 +124,10 @@ class Hmevlc(hme.Application):
                     self.stream_list.append(item)
                 elif ET and self.config.has_option(title, 'rss'):
                     item['rss'] = self.config.get(title, 'rss')
-                    item['func'] = self.top_menu_rss
+                    item['func'] = self.new_menu_rss
                     if not icon in item:
                         item['icon'] = 'icons/rss.png'
-                    rss_list.append(item)
+                    self.rss_list.append(item)
                 elif ET and self.config.has_option(title, 'shout_list'):
                     item['shout_list'] = self.config.get(title, 'shout_list')
                     item['shout_tune'] = self.config.get(title, 'shout_tune')
@@ -142,7 +142,10 @@ class Hmevlc(hme.Application):
         if self.stream_list:
             items.append({'title': 'Live Streams', 'icon': self.folder,
                           'func': self.top_menu_live})
-        items += rss_list + shout_list + dir_list
+        if self.rss_list:
+            items.append({'title': 'RSS Feeds', 'icon': self.folder,
+                          'func': self.top_menu_rss})
+        items += shout_list + dir_list
 
         self.menus = [ListView(self, TITLE, items)]
         self.show_top()
@@ -165,7 +168,7 @@ class Hmevlc(hme.Application):
             self.in_list = True
             self.show_streams()
 
-    def new_menu(self, title, path):
+    def new_menu_files(self, title, path):
         ld = os.listdir(path)
         dirs = []
         files = []
@@ -195,7 +198,7 @@ class Hmevlc(hme.Application):
             title = s['title']
             newpath = os.path.join(a.basepath, title)
             if os.path.isdir(newpath):
-                self.new_menu(title, newpath)
+                self.new_menu_files(title, newpath)
             else:
                 need_vlc = (self.files_need_vlc or
                             os.path.splitext(newpath)[1].lower()
@@ -222,6 +225,13 @@ class Hmevlc(hme.Application):
                                    self.stream_list, pos, startpos))
         self.show_streams()
 
+    def top_menu_rss(self, rss):
+        title = rss['title']
+        pos, startpos = self.positions.get(title, (0, 0))
+        self.menus.append(ListView(self, title,
+                                   self.rss_list, pos, startpos))
+        self.show_streams()
+
     def top_menu_shoutcast(self, shout_item):
         shout_title = shout_item['title']
         shout_tune = shout_item['shout_tune']
@@ -246,7 +256,7 @@ class Hmevlc(hme.Application):
         self.menus.append(ListView(self, shout_title, stations, pos, startpos))
         self.show_streams()
 
-    def top_menu_rss(self, rss_item):
+    def new_menu_rss(self, rss_item):
         rss_title = rss_item['title']
         needs_vlc = rss_item['needs_vlc']
         feed = urllib.urlopen(rss_item['rss'])
@@ -270,7 +280,7 @@ class Hmevlc(hme.Application):
     def top_menu_files(self, share):
         self.root.set_image(self.graphics[2])
         self.files_need_vlc = share['needs_vlc']
-        self.new_menu(share['title'], share['dir'])
+        self.new_menu_files(share['title'], share['dir'])
 
     def pop_menu(self):
         menu = self.menus[-1]
