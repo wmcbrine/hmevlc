@@ -67,12 +67,6 @@ class Hmevlc(hme.Application):
         else:
             return (640, 480, 1, 1)
 
-    def get_default(self, section, option, default):
-        if self.config.has_option(section, option):
-            return self.config.get(section, option)
-        else:
-            return default
-
     def get_defaultbool(self, section, option, default):
         if self.config.has_option(section, option):
             return self.config.getboolean(section, option)
@@ -108,35 +102,28 @@ class Hmevlc(hme.Application):
         for title in sorted(self.config.sections()):
             needs_vlc = self.get_defaultbool(title, 'needs_vlc', False)
             if self.have_vlc or not needs_vlc:
-                item = {'title': title, 'needs_vlc': needs_vlc}
-                icon = self.get_default(title, 'icon', '')
-                if icon:
-                    item['icon'] = icon
-                if self.config.has_option(title, 'dir'):
+                item = {'title': title}
+                item.update(self.config.items(title))
+                item['needs_vlc'] = needs_vlc
+                if 'dir' in item:
                     item['func'] = self.top_menu_files
-                    path = self.config.get(title, 'dir')
-                    if os.path.isdir(path):
-                        if not icon in item:
+                    if os.path.isdir(item['dir']):
+                        if not 'icon' in item:
                             item['icon'] = self.folder
-                        item['dir'] = path
                         dir_list.append(item)
                     else:
-                        self.context.log_message('Bad path: %s', path)
-                elif self.config.has_option(title, 'url'):
-                    item['url'] = self.config.get(title, 'url')
+                        self.context.log_message('Bad path: %s', item['dir'])
+                elif 'url' in item:
                     item['func'] = self.handle_focus_streams
                     self.stream_list.append(item)
-                elif ET and self.config.has_option(title, 'rss'):
-                    item['rss'] = self.config.get(title, 'rss')
+                elif ET and 'rss' in item:
                     item['func'] = self.new_menu_rss
-                    if not icon in item:
+                    if not 'icon' in item:
                         item['icon'] = 'icons/rss.png'
                     self.rss_list.append(item)
-                elif ET and self.config.has_option(title, 'shout_list'):
-                    item['shout_list'] = self.config.get(title, 'shout_list')
-                    item['shout_tune'] = self.config.get(title, 'shout_tune')
+                elif ET and 'shout_list' in item:
                     item['func'] = self.top_menu_shoutcast
-                    if not icon in item:
+                    if not 'icon' in item:
                         item['icon'] = self.folder
                     shout_list.append(item)
 
@@ -163,8 +150,7 @@ class Hmevlc(hme.Application):
 
     def handle_focus_streams(self, s):
         if self.in_list:
-            vid = VideoStreamer(self, s['title'], s['url'],
-                                s['needs_vlc'])
+            vid = VideoStreamer(self, s['title'], s['url'], s['needs_vlc'])
             self.in_list = False
             self.set_focus(vid)
         else:
@@ -282,9 +268,8 @@ class Hmevlc(hme.Application):
         self.set_focus(menu)
 
     def pop_menu(self):
-        menu = self.menus[-1]
+        menu = self.menus.pop()
         self.positions[menu.basepath] = (menu.pos, menu.startpos)
-        self.menus.pop()
         if self.menus:
             menu = self.menus[-1]
             if self.background != menu.color:
