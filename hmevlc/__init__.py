@@ -121,7 +121,7 @@ class Hmevlc(hme.Application):
                         item['dir'] = path
                         dir_list.append(item)
                     else:
-                        print 'Bad path:', path
+                        self.context.log_message('Bad path: %s', path)
                 elif self.config.has_option(title, 'url'):
                     item['url'] = self.config.get(title, 'url')
                     item['func'] = self.handle_focus_streams
@@ -232,7 +232,7 @@ class Hmevlc(hme.Application):
         try:
             tree = ET.parse(feed)
         except Exception, msg:
-            print msg
+            self.context.log_message('Shoutcast parse - %s', msg)
             self.set_focus(self.menus[-1])
             return
         stations = []
@@ -253,7 +253,7 @@ class Hmevlc(hme.Application):
         try:
             tree = ET.parse(feed)
         except Exception, msg:
-            print msg
+            self.context.log_message('RSS parse - %s', msg)
             self.set_focus(self.menus[-1])
             return
         items = []
