@@ -1,11 +1,11 @@
-HME/VLC video streamer, v3.2
+HME/VLC video streamer, v3.3
 by William McBrine <wmcbrine@gmail.com>
-January 19, 2009
+January 25, 2009
 
 A simple streaming HME server for the TiVo Series 3 or HD.
 
-Uses ports 9043 and 9044. Tested on Ubuntu Linux 8.04, Mac OS X 10.4,
-and Windows XP.
+Uses ports 9043 and 9044. Tested on Ubuntu Linux 8.04 and 8.10, Mac OS X 
+10.4, and Windows XP.
 
 Requirements:
 
@@ -33,9 +33,9 @@ Stop:
 More info:
 
 Streams can require VLC to reencode/rebroadcast them, or not. For the 
-TiVo to use a stream directly, without VLC, the stream must be MPEG-2 or 
-MPEG-4, and served via http. Entries for new streams or shares can be 
-created in config.ini.
+TiVo to use a stream directly, without VLC, the stream must be MPEG-1, 
+MPEG-2 or MPEG-4 h.264, and served via http. Entries for new streams, 
+shares, RSS feeds or Shoutcast sources can be created in config.ini.
 
 Only one instance of VLC will be run at a time, but it can support 
 multiple TiVos watching the same stream, with little additional 
@@ -43,6 +43,20 @@ overhead. However, two different TiVos can't simultaneously watch two
 different streams if they both require VLC.
 
 Changes:
+
+3.3 -- Added support for "needs_vlc" in file shares. Normally, the
+       extension of the file is used to determine VLC should be used;
+       and if playback fails without it, it's retried with VLC. But some
+       files in ostensibly compatible formats don't play, but don't give
+       an error, either, so HME/VLC doesn't know to retry them. Setting
+       "needs_vlc=True" in config.ini for the share will force the use
+       of VLC even for these not-so-compatible files.
+
+       RSS Feeds are now kept in a separate top-level folder.
+
+       Slightly better error reporting/logging.
+
+       Huge internal reorganization.
 
 3.2 -- Files with the extensions ".tivo", ".m4v", ".mpeg", ".vob", and
        ".m2v" are now passed through without reencoding (in addition to

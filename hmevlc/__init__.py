@@ -1,4 +1,4 @@
-# HME/VLC video streamer, v3.2
+# HME/VLC video streamer, v3.3
 # Copyright 2009 William McBrine
 # Contributions by Jeff Mossontte
 #
@@ -18,7 +18,7 @@
 """ HME app """
 
 __author__ = 'William McBrine <wmcbrine@gmail.com>'
-__version__ = '3.2'
+__version__ = '3.3'
 __license__ = 'GPL'
 
 import os
