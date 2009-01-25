@@ -42,10 +42,6 @@ TITLE = 'HME/VLC'
 GRAPHICS = ('red', 'blue', 'green')
 GRAPHICS_TEMPLATES = ('apples/%s.png', 'apples/%s-hd.png')
 
-MENU_TOP = 0
-MENU_STREAMS = 1
-MENU_FILES = 2
-
 class Hmevlc(hme.Application):
     def startup(self):
         self.using_vlc = False
@@ -124,6 +120,7 @@ class Hmevlc(hme.Application):
                         print 'Bad path:', path
                 elif self.config.has_option(title, 'url'):
                     item['url'] = self.config.get(title, 'url')
+                    item['func'] = self.handle_focus_streams
                     self.stream_list.append(item)
                 elif ET and self.config.has_option(title, 'rss'):
                     item['rss'] = self.config.get(title, 'rss')
@@ -152,26 +149,18 @@ class Hmevlc(hme.Application):
 
     def show_top(self):
         self.root.set_image(self.graphics[0])
-        self.menu_mode = MENU_TOP
         self.set_focus(self.menus[-1])
 
     def show_streams(self):
         self.root.set_image(self.graphics[1])
         self.set_focus(self.menus[-1])
 
-    def handle_focus_streams(self):
+    def handle_focus_streams(self, s):
         if self.in_list:
-            s = self.menus[-1].selected
-            if s:
-                vid = VideoStreamer(self, s['title'], s['url'],
-                                    s['needs_vlc'])
-                self.in_list = False
-                self.set_focus(vid)
-            else:
-                self.positions[self.menus[-1].title] = (
-                    self.menus[-1].pos, self.menus[-1].startpos)
-                self.menus.pop()
-                self.show_top()
+            vid = VideoStreamer(self, s['title'], s['url'],
+                                s['needs_vlc'])
+            self.in_list = False
+            self.set_focus(vid)
         else:
             self.in_list = True
             self.show_streams()
@@ -189,50 +178,44 @@ class Hmevlc(hme.Application):
         dirs.sort()
         files.sort()
         pos, startpos = self.positions.get(path, (0, 0))
-        a = ListView(self, title, [{'title': i, 'icon': self.folder}
+        a = ListView(self, title, [{'title': i, 'icon': self.folder,
+                                    'func': self.handle_focus_files}
                                    for i in dirs] +
-                                  [{'title': i} for i in files], pos, startpos)
+                                  [{'title': i,
+                                    'func': self.handle_focus_files}
+                                   for i in files], pos, startpos)
         a.basepath = path
         self.set_focus(a)
         self.menus.append(a)
         self.in_list = True
 
-    def handle_focus_files(self):
+    def handle_focus_files(self, s):
         if self.in_list:
             a = self.menus[-1]
-            if a.selected:
-                title = a.selected['title']
-                newpath = os.path.join(a.basepath, title)
-                if os.path.isdir(newpath):
-                    self.new_menu(title, newpath)
-                else:
-                    need_vlc = (self.files_need_vlc or
-                                os.path.splitext(newpath)[1].lower()
-                                not in self.pass_exts)
-                    if need_vlc:
-                        url = newpath
-                    else:
-                        base = self.context.server.datapath
-                        host = self.context.headers['host']
-                        newpath = newpath.replace(base, '', 1)
-                        url = 'http://%s/%s' % (host, urllib.quote(newpath))
-                    vid = VideoStreamer(self, title, url, need_vlc)
-                    self.in_list = False
-                    self.set_focus(vid)
+            title = s['title']
+            newpath = os.path.join(a.basepath, title)
+            if os.path.isdir(newpath):
+                self.new_menu(title, newpath)
             else:
-                self.positions[a.basepath] = (a.pos, a.startpos)
-                self.menus.pop()
-                if len(self.menus) > 1:
-                    self.set_focus(self.menus[-1])
+                need_vlc = (self.files_need_vlc or
+                            os.path.splitext(newpath)[1].lower()
+                            not in self.pass_exts)
+                if need_vlc:
+                    url = newpath
                 else:
-                    self.show_top()
+                    base = self.context.server.datapath
+                    host = self.context.headers['host']
+                    newpath = newpath.replace(base, '', 1)
+                    url = 'http://%s/%s' % (host, urllib.quote(newpath))
+                vid = VideoStreamer(self, title, url, need_vlc)
+                self.in_list = False
+                self.set_focus(vid)
         else:
             self.root.set_image(self.graphics[2])
             self.in_list = True
             self.set_focus(self.menus[-1])
 
     def top_menu_live(self, live):
-        self.menu_mode = MENU_STREAMS
         title = live['title']
         pos, startpos = self.positions.get(title, (0, 0))
         self.menus.append(ListView(self, title,
@@ -257,8 +240,8 @@ class Hmevlc(hme.Application):
                 if not title:
                     title = station.get('name').strip()
                 stations.append({'title': title, 'url': shout_tune +
-                                 station.get('id'), 'needs_vlc': needs_vlc})
-        self.menu_mode = MENU_STREAMS
+                                 station.get('id'), 'needs_vlc': needs_vlc,
+                                 'func': self.handle_focus_streams})
         pos, startpos = self.positions.get(shout_title, (0, 0))
         self.menus.append(ListView(self, shout_title, stations, pos, startpos))
         self.show_streams()
@@ -278,28 +261,34 @@ class Hmevlc(hme.Application):
             enc = item.find('enclosure')
             if enc is not None and enc.get('type').startswith('video'):
                 items.append({'title': item.findtext('title').strip(),
-                              'url': enc.get('url'), 'needs_vlc': needs_vlc})
-        self.menu_mode = MENU_STREAMS
+                              'url': enc.get('url'), 'needs_vlc': needs_vlc,
+                              'func': self.handle_focus_streams})
         pos, startpos = self.positions.get(rss_title, (0, 0))
         self.menus.append(ListView(self, rss_title, items, pos, startpos))
         self.show_streams()
 
     def top_menu_files(self, share):
         self.root.set_image(self.graphics[2])
-        self.menu_mode = MENU_FILES
         self.files_need_vlc = share['needs_vlc']
         self.new_menu(share['title'], share['dir'])
 
     def handle_focus(self, focus):
         if focus:
-            if self.menu_mode == MENU_STREAMS:
-                self.handle_focus_streams()
-            elif self.menu_mode == MENU_FILES:
-                self.handle_focus_files()
+            menu = self.menus[-1]
+            s = menu.selected
+            if s:
+                s['func'](s)
             else:
-                s = self.menus[-1].selected
-                if s:
-                    s['func'](s)
+                if hasattr(menu, 'basepath'):
+                    title = menu.basepath
+                else:
+                    title = menu.title
+                self.positions[title] = (menu.pos, menu.startpos)
+                self.menus.pop()
+                if len(self.menus) > 1:
+                    self.set_focus(self.menus[-1])
+                elif self.menus:
+                    self.show_top()
                 else:
                     self.active = False
 
