@@ -67,20 +67,14 @@ class Hmevlc(hme.Application):
         else:
             return (640, 480, 1, 1)
 
-    def get_defaultbool(self, section, option, default):
-        if self.config.has_option(section, option):
-            return self.config.getboolean(section, option)
-        else:
-            return default
-
     def handle_active(self):
-        self.config = self.context.server.config
+        config = self.context.server.config
         self.positions = {}
 
         self.graphics = [GRAPHICS_TEMPLATES[self.hd] % item
                          for item in GRAPHICS]
 
-        self.have_vlc = vlc.have(self.config)
+        self.have_vlc = vlc.have(config)
         self.pass_exts = [x for x in self.context.MIMETYPES
                           if self.context.MIMETYPES[x] in
                           ('video/mpeg', 'video/mp4', 'video/x-tivo-mpeg')]
@@ -99,11 +93,14 @@ class Hmevlc(hme.Application):
         self.rss_list = []
         shout_list = []
         dir_list = []
-        for title in sorted(self.config.sections()):
-            needs_vlc = self.get_defaultbool(title, 'needs_vlc', False)
+        for title in sorted(config.sections()):
+            if config.has_option(title, 'needs_vlc'):
+                needs_vlc = config.getboolean(title, 'needs_vlc')
+            else:
+                needs_vlc = False
             if self.have_vlc or not needs_vlc:
                 item = {'title': title}
-                item.update(self.config.items(title))
+                item.update(config.items(title))
                 item['needs_vlc'] = needs_vlc
                 if 'dir' in item:
                     item['func'] = self.top_menu_files
