@@ -39,7 +39,7 @@ from hmevlc.hmevid import VideoStreamer
 
 TITLE = 'HME/VLC'
 
-GRAPHICS = ('red', 'blue', 'green')
+GRAPHICS = ('red', 'blue', 'green', 'folder')
 GRAPHICS_TEMPLATES = ('apples/%s.png', 'apples/%s-hd.png')
 
 RED = 0
@@ -73,6 +73,7 @@ class Hmevlc(hme.Application):
 
         self.graphics = [GRAPHICS_TEMPLATES[self.hd] % item
                          for item in GRAPHICS]
+        folder = self.graphics[3]
 
         self.have_vlc = vlc.have(config)
         self.pass_exts = [x for x in self.context.MIMETYPES
@@ -83,11 +84,6 @@ class Hmevlc(hme.Application):
                          if self.context.MIMETYPES[x].startswith('video')]
         else:
             self.exts = self.pass_exts
-
-        if self.hd:
-            self.folder = 'apples/folder-hd.png'
-        else:
-            self.folder = 'apples/folder.png'
 
         self.stream_list = []
         self.rss_list = []
@@ -106,7 +102,7 @@ class Hmevlc(hme.Application):
                     item['func'] = self.top_menu_files
                     if os.path.isdir(item['dir']):
                         if not 'icon' in item:
-                            item['icon'] = self.folder
+                            item['icon'] = folder
                         dir_list.append(item)
                     else:
                         self.context.log_message('Bad path: %s', item['dir'])
@@ -121,17 +117,17 @@ class Hmevlc(hme.Application):
                 elif ET and 'shout_list' in item:
                     item['func'] = self.top_menu_shoutcast
                     if not 'icon' in item:
-                        item['icon'] = self.folder
+                        item['icon'] = folder
                     shout_list.append(item)
 
         self.in_list = True
 
         items = []
         if self.stream_list:
-            items.append({'title': 'Live Streams', 'icon': self.folder,
+            items.append({'title': 'Live Streams', 'icon': folder,
                           'func': self.top_menu_live})
         if self.rss_list:
-            items.append({'title': 'RSS Feeds', 'icon': self.folder,
+            items.append({'title': 'RSS Feeds', 'icon': folder,
                           'func': self.top_menu_rss})
         items += shout_list + dir_list
 
@@ -165,7 +161,7 @@ class Hmevlc(hme.Application):
                    files.append(i)
         dirs.sort()
         files.sort()
-        self.push_menu(title, [{'title': i, 'icon': self.folder,
+        self.push_menu(title, [{'title': i, 'icon': self.graphics[3],
                                 'func': self.handle_focus_files}
                                for i in dirs] +
                               [{'title': i,
