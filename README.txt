@@ -56,7 +56,7 @@ Changes:
 
        Slightly better error reporting/logging.
 
-       Huge internal reorganization.
+       Internal reorganization.
 
 3.2 -- Files with the extensions ".tivo", ".m4v", ".mpeg", ".vob", and
        ".m2v" are now passed through without reencoding (in addition to
