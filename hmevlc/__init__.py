@@ -272,25 +272,28 @@ class Hmevlc(hme.Application):
         self.files_need_vlc = share['needs_vlc']
         self.new_menu(share['title'], share['dir'])
 
+    def pop_menu(self):
+        menu = self.menus[-1]
+        if hasattr(menu, 'basepath'):
+            title = menu.basepath
+        else:
+            title = menu.title
+        self.positions[title] = (menu.pos, menu.startpos)
+        self.menus.pop()
+        if len(self.menus) > 1:
+            self.set_focus(self.menus[-1])
+        elif self.menus:
+            self.show_top()
+        else:
+            self.active = False
+
     def handle_focus(self, focus):
         if focus:
-            menu = self.menus[-1]
-            s = menu.selected
+            s = self.menus[-1].selected
             if s:
                 s['func'](s)
             else:
-                if hasattr(menu, 'basepath'):
-                    title = menu.basepath
-                else:
-                    title = menu.title
-                self.positions[title] = (menu.pos, menu.startpos)
-                self.menus.pop()
-                if len(self.menus) > 1:
-                    self.set_focus(self.menus[-1])
-                elif self.menus:
-                    self.show_top()
-                else:
-                    self.active = False
+                self.pop_menu()
 
     def cleanup(self):
         if self.using_vlc:
