@@ -159,6 +159,7 @@ class Hmevlc(hme.Application):
         if color is None:
             color = self.background
         self.root.set_image(self.graphics[color])
+        self.background = color
 
     def handle_focus_streams(self, s):
         if self.in_list:
