@@ -147,16 +147,18 @@ class Hmevlc(hme.Application):
                           'func': self.top_menu_rss})
         items += shout_list + dir_list
 
-        self.menus = [ListView(self, TITLE, items)]
-        self.show_top()
+        self.menus = []
+        self.background_red()
+        self.push_menu(TITLE, items)
 
-    def show_top(self):
+    def background_red(self):
         self.root.set_image(self.graphics[0])
-        self.set_focus(self.menus[-1])
 
-    def show_streams(self):
+    def background_blue(self):
         self.root.set_image(self.graphics[1])
-        self.set_focus(self.menus[-1])
+
+    def background_green(self):
+        self.root.set_image(self.graphics[2])
 
     def handle_focus_streams(self, s):
         if self.in_list:
@@ -166,7 +168,8 @@ class Hmevlc(hme.Application):
             self.set_focus(vid)
         else:
             self.in_list = True
-            self.show_streams()
+            self.background_blue()
+            self.set_focus(self.menus[-1])
 
     def new_menu_files(self, title, path):
         ld = os.listdir(path)
@@ -180,16 +183,12 @@ class Hmevlc(hme.Application):
                    files.append(i)
         dirs.sort()
         files.sort()
-        pos, startpos = self.positions.get(path, (0, 0))
-        a = ListView(self, title, [{'title': i, 'icon': self.folder,
-                                    'func': self.handle_focus_files}
-                                   for i in dirs] +
-                                  [{'title': i,
-                                    'func': self.handle_focus_files}
-                                   for i in files], pos, startpos)
-        a.basepath = path
-        self.set_focus(a)
-        self.menus.append(a)
+        self.push_menu(title, [{'title': i, 'icon': self.folder,
+                                'func': self.handle_focus_files}
+                               for i in dirs] +
+                              [{'title': i,
+                                'func': self.handle_focus_files}
+                               for i in files], path)
         self.in_list = True
 
     def handle_focus_files(self, s):
@@ -214,23 +213,19 @@ class Hmevlc(hme.Application):
                 self.in_list = False
                 self.set_focus(vid)
         else:
-            self.root.set_image(self.graphics[2])
+            self.background_green()
             self.in_list = True
             self.set_focus(self.menus[-1])
 
     def top_menu_live(self, live):
         title = live['title']
-        pos, startpos = self.positions.get(title, (0, 0))
-        self.menus.append(ListView(self, title,
-                                   self.stream_list, pos, startpos))
-        self.show_streams()
+        self.background_blue()
+        self.push_menu(title, self.stream_list)
 
     def top_menu_rss(self, rss):
         title = rss['title']
-        pos, startpos = self.positions.get(title, (0, 0))
-        self.menus.append(ListView(self, title,
-                                   self.rss_list, pos, startpos))
-        self.show_streams()
+        self.background_blue()
+        self.push_menu(title, self.rss_list)
 
     def top_menu_shoutcast(self, shout_item):
         shout_title = shout_item['title']
@@ -241,7 +236,7 @@ class Hmevlc(hme.Application):
             tree = ET.parse(feed)
         except Exception, msg:
             print msg
-            self.show_top()
+            self.set_focus(self.menus[-1])
             return
         stations = []
         for station in tree.getroot():
@@ -252,9 +247,8 @@ class Hmevlc(hme.Application):
                 stations.append({'title': title, 'url': shout_tune +
                                  station.get('id'), 'needs_vlc': needs_vlc,
                                  'func': self.handle_focus_streams})
-        pos, startpos = self.positions.get(shout_title, (0, 0))
-        self.menus.append(ListView(self, shout_title, stations, pos, startpos))
-        self.show_streams()
+        self.background_blue()
+        self.push_menu(shout_title, stations)
 
     def new_menu_rss(self, rss_item):
         rss_title = rss_item['title']
@@ -264,7 +258,7 @@ class Hmevlc(hme.Application):
             tree = ET.parse(feed)
         except Exception, msg:
             print msg
-            self.show_top()
+            self.set_focus(self.menus[-1])
             return
         items = []
         for item in tree.getiterator('item'):
@@ -273,27 +267,31 @@ class Hmevlc(hme.Application):
                 items.append({'title': item.findtext('title').strip(),
                               'url': enc.get('url'), 'needs_vlc': needs_vlc,
                               'func': self.handle_focus_streams})
-        pos, startpos = self.positions.get(rss_title, (0, 0))
-        self.menus.append(ListView(self, rss_title, items, pos, startpos))
-        self.show_streams()
+        self.background_blue()
+        self.push_menu(rss_title, items)
 
     def top_menu_files(self, share):
-        self.root.set_image(self.graphics[2])
+        self.background_green()
         self.files_need_vlc = share['needs_vlc']
         self.new_menu_files(share['title'], share['dir'])
 
+    def push_menu(self, title, items, path=None):
+        if not path:
+            path = title
+        pos, startpos = self.positions.get(path, (0, 0))
+        menu = ListView(self, title, items, pos, startpos)
+        menu.basepath = path
+        self.menus.append(menu)
+        self.set_focus(menu)
+
     def pop_menu(self):
         menu = self.menus[-1]
-        if hasattr(menu, 'basepath'):
-            title = menu.basepath
-        else:
-            title = menu.title
-        self.positions[title] = (menu.pos, menu.startpos)
+        self.positions[menu.basepath] = (menu.pos, menu.startpos)
         self.menus.pop()
-        if len(self.menus) > 1:
+        if self.menus:
+            if len(self.menus) == 1:
+                self.background_red()
             self.set_focus(self.menus[-1])
-        elif self.menus:
-            self.show_top()
         else:
             self.active = False
 
