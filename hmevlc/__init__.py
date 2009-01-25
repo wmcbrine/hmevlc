@@ -42,6 +42,10 @@ TITLE = 'HME/VLC'
 GRAPHICS = ('red', 'blue', 'green')
 GRAPHICS_TEMPLATES = ('apples/%s.png', 'apples/%s-hd.png')
 
+RED = 0
+BLUE = 1
+GREEN = 2
+
 class Hmevlc(hme.Application):
     def startup(self):
         self.using_vlc = False
@@ -148,17 +152,13 @@ class Hmevlc(hme.Application):
         items += shout_list + dir_list
 
         self.menus = []
-        self.background_red()
-        self.push_menu(TITLE, items)
+        self.background = None
+        self.push_menu(TITLE, items, RED)
 
-    def background_red(self):
-        self.root.set_image(self.graphics[0])
-
-    def background_blue(self):
-        self.root.set_image(self.graphics[1])
-
-    def background_green(self):
-        self.root.set_image(self.graphics[2])
+    def set_background(self, color=None):
+        if color is None:
+            color = self.background
+        self.root.set_image(self.graphics[color])
 
     def handle_focus_streams(self, s):
         if self.in_list:
@@ -168,7 +168,7 @@ class Hmevlc(hme.Application):
             self.set_focus(vid)
         else:
             self.in_list = True
-            self.background_blue()
+            self.set_background()
             self.set_focus(self.menus[-1])
 
     def new_menu_files(self, title, path):
@@ -188,7 +188,7 @@ class Hmevlc(hme.Application):
                                for i in dirs] +
                               [{'title': i,
                                 'func': self.handle_focus_files}
-                               for i in files], path)
+                               for i in files], GREEN, path)
         self.in_list = True
 
     def handle_focus_files(self, s):
@@ -213,19 +213,15 @@ class Hmevlc(hme.Application):
                 self.in_list = False
                 self.set_focus(vid)
         else:
-            self.background_green()
+            self.set_background()
             self.in_list = True
             self.set_focus(self.menus[-1])
 
     def top_menu_live(self, live):
-        title = live['title']
-        self.background_blue()
-        self.push_menu(title, self.stream_list)
+        self.push_menu(live['title'], self.stream_list, BLUE)
 
     def top_menu_rss(self, rss):
-        title = rss['title']
-        self.background_blue()
-        self.push_menu(title, self.rss_list)
+        self.push_menu(rss['title'], self.rss_list, BLUE)
 
     def top_menu_shoutcast(self, shout_item):
         shout_title = shout_item['title']
@@ -247,8 +243,7 @@ class Hmevlc(hme.Application):
                 stations.append({'title': title, 'url': shout_tune +
                                  station.get('id'), 'needs_vlc': needs_vlc,
                                  'func': self.handle_focus_streams})
-        self.background_blue()
-        self.push_menu(shout_title, stations)
+        self.push_menu(shout_title, stations, BLUE)
 
     def new_menu_rss(self, rss_item):
         rss_title = rss_item['title']
@@ -267,20 +262,21 @@ class Hmevlc(hme.Application):
                 items.append({'title': item.findtext('title').strip(),
                               'url': enc.get('url'), 'needs_vlc': needs_vlc,
                               'func': self.handle_focus_streams})
-        self.background_blue()
-        self.push_menu(rss_title, items)
+        self.push_menu(rss_title, items, BLUE)
 
     def top_menu_files(self, share):
-        self.background_green()
         self.files_need_vlc = share['needs_vlc']
         self.new_menu_files(share['title'], share['dir'])
 
-    def push_menu(self, title, items, path=None):
+    def push_menu(self, title, items, color, path=None):
         if not path:
             path = title
+        if self.background != color:
+            self.set_background(color)
         pos, startpos = self.positions.get(path, (0, 0))
         menu = ListView(self, title, items, pos, startpos)
         menu.basepath = path
+        menu.color = color
         self.menus.append(menu)
         self.set_focus(menu)
 
@@ -289,9 +285,10 @@ class Hmevlc(hme.Application):
         self.positions[menu.basepath] = (menu.pos, menu.startpos)
         self.menus.pop()
         if self.menus:
-            if len(self.menus) == 1:
-                self.background_red()
-            self.set_focus(self.menus[-1])
+            menu = self.menus[-1]
+            if self.background != menu.color:
+                self.set_background(menu.color)
+            self.set_focus(menu)
         else:
             self.active = False
 
