@@ -142,6 +142,9 @@ class Hmevlc(hme.Application):
         self.background = None
         self.push_menu(TITLE, items, RED)
 
+    def redraw(self):
+        self.set_focus(self.menus[-1])
+
     def set_background(self, color=None):
         if color is None:
             color = self.background
@@ -149,14 +152,9 @@ class Hmevlc(hme.Application):
         self.background = color
 
     def handle_focus_streams(self, s):
-        if self.in_list:
-            vid = VideoStreamer(self, s['title'], s['url'], s['needs_vlc'])
-            self.in_list = False
-            self.set_focus(vid)
-        else:
-            self.in_list = True
-            self.set_background()
-            self.set_focus(self.menus[-1])
+        vid = VideoStreamer(self, s['title'], s['url'], s['needs_vlc'])
+        self.in_list = False
+        self.set_focus(vid)
 
     def new_menu_files(self, title, path):
         ld = os.listdir(path)
@@ -176,33 +174,27 @@ class Hmevlc(hme.Application):
                               [{'title': i,
                                 'func': self.handle_focus_files}
                                for i in files], GREEN, path)
-        self.in_list = True
 
     def handle_focus_files(self, s):
-        if self.in_list:
-            a = self.menus[-1]
-            title = s['title']
-            newpath = os.path.join(a.basepath, title)
-            if os.path.isdir(newpath):
-                self.new_menu_files(title, newpath)
-            else:
-                need_vlc = (self.files_need_vlc or
-                            os.path.splitext(newpath)[1].lower()
-                            not in self.pass_exts)
-                if need_vlc:
-                    url = newpath
-                else:
-                    base = self.context.server.datapath
-                    host = self.context.headers['host']
-                    newpath = newpath.replace(base, '', 1)
-                    url = 'http://%s/%s' % (host, urllib.quote(newpath))
-                vid = VideoStreamer(self, title, url, need_vlc)
-                self.in_list = False
-                self.set_focus(vid)
+        a = self.menus[-1]
+        title = s['title']
+        newpath = os.path.join(a.basepath, title)
+        if os.path.isdir(newpath):
+            self.new_menu_files(title, newpath)
         else:
-            self.set_background()
-            self.in_list = True
-            self.set_focus(self.menus[-1])
+            need_vlc = (self.files_need_vlc or
+                        os.path.splitext(newpath)[1].lower()
+                        not in self.pass_exts)
+            if need_vlc:
+                url = newpath
+            else:
+                base = self.context.server.datapath
+                host = self.context.headers['host']
+                newpath = newpath.replace(base, '', 1)
+                url = 'http://%s/%s' % (host, urllib.quote(newpath))
+            vid = VideoStreamer(self, title, url, need_vlc)
+            self.in_list = False
+            self.set_focus(vid)
 
     def top_menu_live(self, live):
         self.push_menu(live['title'], self.stream_list, BLUE)
@@ -219,7 +211,7 @@ class Hmevlc(hme.Application):
             tree = ET.parse(feed)
         except Exception, msg:
             self.context.log_message('Shoutcast parse - %s', msg)
-            self.set_focus(self.menus[-1])
+            self.redraw()
             return
         stations = []
         for station in tree.getroot():
@@ -240,7 +232,7 @@ class Hmevlc(hme.Application):
             tree = ET.parse(feed)
         except Exception, msg:
             self.context.log_message('RSS parse - %s', msg)
-            self.set_focus(self.menus[-1])
+            self.redraw()
             return
         items = []
         for item in tree.getiterator('item'):
@@ -280,11 +272,16 @@ class Hmevlc(hme.Application):
 
     def handle_focus(self, focus):
         if focus:
-            s = self.menus[-1].selected
-            if s:
-                s['func'](s)
+            if self.in_list:
+                s = self.menus[-1].selected
+                if s:
+                    s['func'](s)
+                else:
+                    self.pop_menu()
             else:
-                self.pop_menu()
+                self.in_list = True
+                self.set_background()
+                self.redraw()
 
     def cleanup(self):
         if self.using_vlc:
