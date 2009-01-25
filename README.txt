@@ -22,7 +22,7 @@ Use:
 - Unzip
 - (Optional) Edit config.ini to point to your files
 - Run start.py
-- Go to the Music, Photos and More menu on your TiVo
+- Go to the Music, Photos and Showcases menu on your TiVo
 
 Stop:
 
