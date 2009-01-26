@@ -41,10 +41,7 @@ TITLE = 'HME/VLC'
 
 GRAPHICS = ('red', 'blue', 'green', 'folder')
 GRAPHICS_TEMPLATES = ('apples/%s.png', 'apples/%s-hd.png')
-
-RED = 0
-BLUE = 1
-GREEN = 2
+RED, BLUE, GREEN = 0, 1, 2
 
 class Hmevlc(hme.Application):
     def startup(self):
