@@ -104,7 +104,7 @@ class Hmevlc(hme.Application):
                     else:
                         self.context.log_message('Bad path: %s', item['dir'])
                 elif 'url' in item:
-                    item['func'] = self.handle_focus_streams
+                    item['func'] = self.play_stream
                     self.stream_list.append(item)
                 elif ET and 'rss' in item:
                     item['func'] = self.new_menu_rss
@@ -141,8 +141,8 @@ class Hmevlc(hme.Application):
         self.root.set_image(self.graphics[color])
         self.background = color
 
-    def handle_focus_streams(self, s):
-        vid = VideoStreamer(self, s['title'], s['url'], s['needs_vlc'])
+    def play_stream(self, item):
+        vid = VideoStreamer(self, item)
         self.in_list = False
         self.set_focus(vid)
 
@@ -182,9 +182,8 @@ class Hmevlc(hme.Application):
                 host = self.context.headers['host']
                 newpath = newpath.replace(base, '', 1)
                 url = 'http://%s/%s' % (host, urllib.quote(newpath))
-            vid = VideoStreamer(self, title, url, need_vlc)
-            self.in_list = False
-            self.set_focus(vid)
+            item = {'title': title, 'url': url, 'needs_vlc': need_vlc}
+            self.play_stream(item)
 
     def top_menu_live(self, live):
         self.push_menu(live['title'], self.stream_list, BLUE)
@@ -210,7 +209,7 @@ class Hmevlc(hme.Application):
                     title = station.get('name').strip()
                 stations.append({'title': title, 'url': shout_tune +
                                  station.get('id'), 'needs_vlc': needs_vlc,
-                                 'func': self.handle_focus_streams})
+                                 'func': self.play_stream})
         self.push_menu(shout_item['title'], stations, BLUE)
 
     def new_menu_rss(self, rss_item):
@@ -228,7 +227,8 @@ class Hmevlc(hme.Application):
             if enc is not None and enc.get('type').startswith('video'):
                 items.append({'title': item.findtext('title').strip(),
                               'url': enc.get('url'), 'needs_vlc': needs_vlc,
-                              'func': self.handle_focus_streams})
+                              'description': item.findtext('description'),
+                              'func': self.play_stream})
         self.push_menu(rss_item['title'], items, BLUE)
 
     def top_menu_files(self, share):

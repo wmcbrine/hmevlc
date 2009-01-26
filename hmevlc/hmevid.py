@@ -38,8 +38,7 @@ FG = 0xcfcfcf
 TIMEFORMAT = '%I:%M %p '
 
 class VideoStreamer:
-    def __init__(self, app, title, stream_url, needs_vlc=False,
-                 stream_mime=''):
+    def __init__(self, app, item):
         self.app = app
         self.root = app.root
         self.clear_sent = 0
@@ -48,16 +47,16 @@ class VideoStreamer:
         self.progbar = None
         self.info = None
         self.stream = None
-        self.title = title
-        self.stream_url = stream_url
-        if stream_mime:
-            self.stream_mime = stream_mime
+        self.title = item['title']
+        self.stream_url = item['url']
+        if 'mime' in item:
+            self.stream_mime = item['mime']
         else:
-            ext = os.path.splitext(stream_url)[1].lower()
+            ext = os.path.splitext(self.stream_url)[1].lower()
             self.stream_mime = app.context.MIMETYPES.get(ext, 'video/mpeg')
         if self.stream_mime == 'video/x-tivo-mpeg':
             self.stream_mime = 'video/mpeg'
-        self.needs_vlc = needs_vlc
+        self.needs_vlc = item['needs_vlc']
         self.sound = app.sound
         self.send_key = app.send_key
         if self.app.hd:
