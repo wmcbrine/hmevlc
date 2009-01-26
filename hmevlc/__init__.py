@@ -99,8 +99,8 @@ class Hmevlc(hme.Application):
                 item.update(config.items(title))
                 item['needs_vlc'] = needs_vlc
                 if 'dir' in item:
-                    item['func'] = self.top_menu_files
                     if os.path.isdir(item['dir']):
+                        item['func'] = self.top_menu_files
                         if not 'icon' in item:
                             item['icon'] = folder
                         dir_list.append(item)
