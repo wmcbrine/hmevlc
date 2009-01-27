@@ -147,49 +147,36 @@ class Hmevlc(hme.Application):
         self.set_focus(vid)
 
     def new_menu_files(self, share):
-        title = share['title']
         path = share['dir']
         needs_vlc = share['needs_vlc']
-        ld = os.listdir(path)
         dirs = []
         files = []
-        for i in ld:
-            if os.path.isdir(os.path.join(path, i)):
-               dirs.append(i)
+        for i in sorted(os.listdir(path)):
+            item = {'title': i, 'needs_vlc': needs_vlc}
+            newpath = os.path.join(path, i)
+            if os.path.isdir(newpath):
+               item.update({'icon': self.graphics[3], 'dir': newpath,
+                            'func': self.new_menu_files})
+               dirs.append(item)
             else:
-               if os.path.splitext(i)[1].lower() in self.exts:
-                   files.append(i)
-        dirs.sort()
-        files.sort()
-        self.push_menu(title, [{'title': i, 'icon': self.graphics[3],
-                                'func': self.handle_focus_files,
-                                'needs_vlc': needs_vlc}
-                               for i in dirs] +
-                              [{'title': i,
-                                'func': self.handle_focus_files,
-                                'needs_vlc': needs_vlc}
-                               for i in files], GREEN, path)
+               ext = os.path.splitext(i)[1].lower()
+               if ext in self.exts:
+                   if ext not in self.pass_exts:
+                       item['needs_vlc'] = True
+                   item.update({'url': newpath, 'func': self.play_file})
+                   files.append(item)
+        self.push_menu(share['title'], dirs + files, GREEN, path)
 
-    def handle_focus_files(self, s):
-        a = self.menus[-1]
-        title = s['title']
-        newpath = os.path.join(a.basepath, title)
-        if os.path.isdir(newpath):
-            self.new_menu_files({'title': title, 'dir': newpath,
-                                 'needs_vlc': s['needs_vlc']})
-        else:
-            needs_vlc = (s['needs_vlc'] or
-                         os.path.splitext(newpath)[1].lower()
-                         not in self.pass_exts)
-            if needs_vlc:
-                url = newpath
-            else:
-                base = self.context.server.datapath
-                host = self.context.headers['host']
-                newpath = newpath.replace(base, '', 1)
-                url = 'http://%s/%s' % (host, urllib.quote(newpath))
-            item = {'title': title, 'url': url, 'needs_vlc': needs_vlc}
-            self.play_stream(item)
+    def play_file(self, s):
+        url = s['url']
+        needs_vlc = s['needs_vlc']
+        if not needs_vlc:
+            base = self.context.server.datapath
+            host = self.context.headers['host']
+            url = url.replace(base, '', 1)
+            url = 'http://%s/%s' % (host, urllib.quote(url))
+        self.play_stream({'title': s['title'], 'url': url,
+                          'needs_vlc': needs_vlc})
 
     def top_menu_live(self, live):
         self.push_menu(live['title'], self.stream_list, BLUE)
