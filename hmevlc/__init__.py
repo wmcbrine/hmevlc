@@ -149,32 +149,30 @@ class Hmevlc(hme.Application):
     def new_menu_files(self, share):
         path = share['dir']
         needs_vlc = share['needs_vlc']
-        dirs = []
-        files = []
+        dirs, files = [], []
         for i in sorted(os.listdir(path)):
             item = {'title': i, 'needs_vlc': needs_vlc}
             newpath = os.path.join(path, i)
             if os.path.isdir(newpath):
-               item.update({'icon': self.graphics[3], 'dir': newpath,
-                            'func': self.new_menu_files})
-               dirs.append(item)
+                item.update({'icon': self.graphics[3], 'dir': newpath,
+                             'func': self.new_menu_files})
+                dirs.append(item)
             else:
-               ext = os.path.splitext(i)[1].lower()
-               if ext in self.exts:
-                   if ext not in self.pass_exts:
-                       item['needs_vlc'] = True
-                   item.update({'url': newpath, 'func': self.play_file})
-                   files.append(item)
+                ext = os.path.splitext(i)[1].lower()
+                if ext in self.exts:
+                    if ext not in self.pass_exts:
+                        item['needs_vlc'] = True
+                    item.update({'url': newpath, 'func': self.play_file})
+                    files.append(item)
         self.push_menu(share['title'], dirs + files, GREEN, path)
 
     def play_file(self, s):
         url = s['url']
         needs_vlc = s['needs_vlc']
         if not needs_vlc:
-            base = self.context.server.datapath
-            host = self.context.headers['host']
-            url = url.replace(base, '', 1)
-            url = 'http://%s/%s' % (host, urllib.quote(url))
+            url = url.replace(self.context.server.datapath, '', 1)
+            url = 'http://%s/%s' % (self.context.headers['host'],
+                                    urllib.quote(url))
         self.play_stream({'title': s['title'], 'url': url,
                           'needs_vlc': needs_vlc})
 
