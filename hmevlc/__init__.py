@@ -130,16 +130,25 @@ class Hmevlc(hme.Application):
 
         items = []
         if self.stream_list:
-            items.append({'title': 'Live Streams', 'icon': folder,
-                          'func': self.top_menu_live})
+            if len(self.stream_list) < 4:
+                items += self.stream_list
+            else:
+                items.append({'title': 'Live Streams', 'icon': folder,
+                              'func': self.top_menu_live})
         if self.rss_list:
-            items.append({'title': 'RSS Feeds', 'icon': folder,
-                          'func': self.top_menu_rss})
+            if len(self.rss_list) < 4:
+                items += self.rss_list
+            else:
+                items.append({'title': 'RSS Feeds', 'icon': folder,
+                              'func': self.top_menu_rss})
         items += shout_list + dir_list
 
         self.menus = []
         self.background = None
-        self.push_menu(TITLE, items, RED)
+        if len(items) == len(dir_list) == 1:
+            self.new_menu_files(dir_list[0])
+        else:
+            self.push_menu(TITLE, items, RED)
 
     def redraw(self):
         self.set_focus(self.menus[-1])
