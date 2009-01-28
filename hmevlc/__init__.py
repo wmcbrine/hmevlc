@@ -22,6 +22,7 @@ __version__ = '3.3'
 __license__ = 'GPL'
 
 import os
+import re
 import time
 import urllib
 try:
@@ -42,6 +43,11 @@ TITLE = 'HME/VLC'
 GRAPHICS = ('red', 'blue', 'green', 'folder')
 GRAPHICS_TEMPLATES = ('apples/%s.png', 'apples/%s-hd.png')
 RED, BLUE, GREEN = 0, 1, 2
+
+TAGS = re.compile(r'<.*?>')
+
+def untag(text):
+    return TAGS.sub('', text).strip()
 
 class Hmevlc(hme.Application):
     def startup(self):
@@ -218,7 +224,7 @@ class Hmevlc(hme.Application):
             if enc is not None and enc.get('type').startswith('video'):
                 items.append({'title': item.findtext('title').strip(),
                               'url': enc.get('url'), 'needs_vlc': needs_vlc,
-                              'description': item.findtext('description'),
+                              'desc': untag(item.findtext('description')),
                               'func': self.play_stream})
         self.push_menu(rss_item['title'], items, BLUE)
 
