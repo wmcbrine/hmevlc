@@ -1,4 +1,4 @@
-# HME/VLC video streamer, v3.3
+# HME/VLC video streamer, v3.4
 # Copyright 2009 William McBrine
 # Contributions by Jeff Mossontte
 #
@@ -18,7 +18,7 @@
 """ HME app """
 
 __author__ = 'William McBrine <wmcbrine@gmail.com>'
-__version__ = '3.3'
+__version__ = '3.4'
 __license__ = 'GPL'
 
 import os
@@ -47,7 +47,10 @@ RED, BLUE, GREEN = 0, 1, 2
 TAGS = re.compile(r'<.*?>')
 
 def untag(text):
-    return TAGS.sub('', text).strip()
+    if text:
+        return TAGS.sub('', text).strip()
+    else:
+        return ''
 
 class Hmevlc(hme.Application):
     def startup(self):
@@ -224,8 +227,10 @@ class Hmevlc(hme.Application):
             if enc is not None and enc.get('type').startswith('video'):
                 items.append({'title': item.findtext('title').strip(),
                               'url': enc.get('url'), 'needs_vlc': needs_vlc,
-                              'desc': untag(item.findtext('description')),
                               'func': self.play_stream})
+                desc = untag(item.findtext('description'))
+                if desc:
+                    items[-1]['desc'] = desc
         self.push_menu(rss_item['title'], items, BLUE)
 
     def push_menu(self, title, items, color, path=None):
