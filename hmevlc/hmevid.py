@@ -334,8 +334,4 @@ class VideoStreamer:
             self.sound('bonk')
 
     def handle_idle(self, idle):
-        if idle and not self.stream.speed:
-            if self.app.using_vlc:
-                vlc.stop()
-                self.app.using_vlc = False
-        return bool(self.stream.speed)
+        return true
