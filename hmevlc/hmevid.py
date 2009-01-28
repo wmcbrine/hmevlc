@@ -1,4 +1,4 @@
-# HME/VLC video streamer, v3.2
+# HME/VLC video streamer, v3.4
 # Copyright 2009 William McBrine
 #
 # This program is free software; you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 """ Video streamer class """
 
 __author__ = 'William McBrine <wmcbrine@gmail.com>'
-__version__ = '3.2'
+__version__ = '3.4'
 __license__ = 'GPL'
 
 import os
@@ -35,7 +35,7 @@ BG = 0
 BG2 = 0x7f7f7f
 FG = 0xcfcfcf
 
-TIMEFORMAT = '%I:%M %p '
+TIMEFORMAT = '%I:%M %p'
 
 class VideoStreamer:
     def __init__(self, app, item):
@@ -46,17 +46,16 @@ class VideoStreamer:
         self.loadwin = None
         self.progbar = None
         self.info = None
+        self.info_desc = None
         self.stream = None
-        self.title = item['title']
-        self.stream_url = item['url']
+        self.item = item
         if 'mime' in item:
             self.stream_mime = item['mime']
         else:
-            ext = os.path.splitext(self.stream_url)[1].lower()
+            ext = os.path.splitext(item['url'])[1].lower()
             self.stream_mime = app.context.MIMETYPES.get(ext, 'video/mpeg')
         if self.stream_mime == 'video/x-tivo-mpeg':
             self.stream_mime = 'video/mpeg'
-        self.needs_vlc = item['needs_vlc']
         self.sound = app.sound
         self.send_key = app.send_key
         if self.app.hd:
@@ -75,7 +74,7 @@ class VideoStreamer:
 
     def start_vlc(self):
         host, port = self.app.context.headers['host'].split(':')
-        vlc.start(self.stream_url)
+        vlc.start(self.item['url'])
         self.app.using_vlc = True
         self.stream = hme.Stream(self.app, 'http://%s:%d/' %
                                  (host, vlc.SERVER), 'video/mpeg')
@@ -88,15 +87,15 @@ class VideoStreamer:
             h = self.root.height - 2 * hme.SAFE_TITLE_V
             self.loadwin = self.root.child(hme.SAFE_TITLE_H, hme.SAFE_TITLE_V,
                                            w, h)
-            loadtext = self.loadwin.child(text='Loading %s...' % self.title,
-                                          height=(h / 2),
+            loadtext = self.loadwin.child(text='Loading %s...' %
+                                          self.item['title'], height=(h / 2),
                                           flags=(hme.RSRC_TEXT_WRAP |
                                                  hme.RSRC_VALIGN_BOTTOM))
             self.root.set_color(BG)
-            if self.needs_vlc:
+            if self.item['needs_vlc']:
                 self.start_vlc()
             else:
-                self.stream = hme.Stream(self.app, self.stream_url,
+                self.stream = hme.Stream(self.app, self.item['url'],
                                          self.stream_mime)
             loadback = self.loadwin.child((w - self.lwidth) / 2,
                                           h / 2 + self.fsize,
@@ -113,6 +112,8 @@ class VideoStreamer:
             if self.info:
                 self.info_title.resource.remove()
                 self.info_time.resource.remove()
+                if self.info_desc:
+                    self.info_desc.resource.remove()
                 self.info.remove()
             if self.stream:
                 self.stream.pause()
@@ -164,14 +165,29 @@ class VideoStreamer:
         self.position = 0
 
     def info_bar(self):
+        h = self.bheight
+        x = self.tgap
+        w = self.twidth2
         self.info = self.root.child((self.root.width - self.bsize) / 2,
-                                    self.vgap, self.bsize, self.bheight)
-        self.info.child(colornum=BG).set_transparency(0.5)
-        self.info_title = self.info.child(width=(self.info.width -
-                                                 self.twidth2))
-        self.info_title.set_text(' ' + self.title, colornum=FG,
+                                    self.vgap, self.bsize,
+                                    self.root.height / 2 - self.vgap)
+        self.info.child(height=h, colornum=BG, transparency=0.5)
+        self.info_title = self.info.child(xpos=x, height=h,
+                                          width=(self.info.width - w - 2 * x))
+        self.info_title.set_text(self.item['title'], colornum=FG,
                                  flags=hme.RSRC_HALIGN_LEFT)
-        self.info_time = self.info.child()
+        self.info_time = self.info.child(xpos=(self.info.width - w - x),
+                                         width=w, height=h)
+
+        if 'desc' in self.item:
+            top = h * 1.5
+            self.info.child(ypos=top, colornum=BG, transparency=0.5)
+            self.info_desc = self.info.child(x, top,
+                                             self.info.width - (x * 2))
+            self.info_desc.set_text(self.item['desc'], colornum=FG,
+                                    flags=(hme.RSRC_HALIGN_LEFT |
+                                           hme.RSRC_VALIGN_TOP |
+                                           hme.RSRC_TEXT_WRAP))
         self.info_update()
 
     def speed_sound(self, newspeed):
