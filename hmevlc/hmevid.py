@@ -334,4 +334,4 @@ class VideoStreamer:
             self.sound('bonk')
 
     def handle_idle(self, idle):
-        return true
+        return True
