@@ -148,6 +148,11 @@ class Hmevlc(hme.Application):
         if len(items) == len(dir_list) == 1:
             self.new_menu_files(dir_list[0])
         else:
+            if len(items) == 1:
+                if self.stream_list:
+                    items = self.stream_list
+                elif self.rss_list:
+                    items = self.rss_list
             self.push_menu(TITLE, items, RED)
 
     def redraw(self):
