@@ -1,6 +1,6 @@
-HME/VLC video streamer, v3.3
+HME/VLC video streamer, v3.4
 by William McBrine <wmcbrine@gmail.com>
-January 25, 2009
+January 28, 2009
 
 A simple streaming HME server for the TiVo Series 3 or HD.
 
@@ -43,6 +43,19 @@ overhead. However, two different TiVos can't simultaneously watch two
 different streams if they both require VLC.
 
 Changes:
+
+3.4 -- No more idle timeout during paused video.
+
+       If live streams or RSS feeds are three or fewer items each, show
+       the items in the top-level menu instead of a folder; also, if
+       only one item would appear in the top-level menu, and it's a
+       directory, then show the directory's contents instead.
+
+       Display description text in the info view. Currently this is only
+       automatic for RSS items, but you can set it for live streams if
+       you like, by adding a "desc=whatever" line.
+
+       More internal reorganization.
 
 3.3 -- Added support for "needs_vlc" in file shares. Normally, the
        extension of the file is used to determine VLC should be used;
