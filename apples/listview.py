@@ -1,4 +1,4 @@
-# Apples and Oranges, v0.5
+# Apples and Oranges, v0.6
 # Copyright 2009 William McBrine
 #
 # This library is free software; you can redistribute it and/or
@@ -15,7 +15,7 @@
 # you already have dozens of copies, don't you? If not, visit gnu.org.
 
 __author__ = 'William McBrine <wmcbrine@gmail.com>'
-__version__ = '0.5'
+__version__ = '0.6'
 __license__ = 'LGPL'
 
 """ Apples and Oranges -- ListView
@@ -187,6 +187,7 @@ class ListView:
         self.pos_update()
 
     def handle_key_press(self, code, rawcode):
+        self.key = code
         if code == hme.KEY_LEFT:
             self.sound('left')
             self.selected = None
