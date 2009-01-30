@@ -30,7 +30,8 @@ __license__ = 'LGPL'
     finished, it returns control to the app in the same way; check the
     results in the app's handle_focus(). The "selected" attribute
     contains None if the user backed out of the menu; otherwise it holds
-    the dict of the item selected.
+    the dict of the item selected. The "key" attribute holds the last
+    key code used, primarily to distinguish between select and play.
 
 """
 
