@@ -58,12 +58,12 @@ Changes:
        More internal reorganization.
 
 3.3 -- Added support for "needs_vlc" in file shares. Normally, the
-       extension of the file is used to determine VLC should be used;
-       and if playback fails without it, it's retried with VLC. But some
-       files in ostensibly compatible formats don't play, but don't give
-       an error, either, so HME/VLC doesn't know to retry them. Setting
-       "needs_vlc=True" in config.ini for the share will force the use
-       of VLC even for these not-so-compatible files.
+       extension of the file is used to determine whether VLC should be 
+       used; and if playback fails without it, it's retried with VLC. 
+       But some files in ostensibly compatible formats don't play, but 
+       don't give an error, either, so HME/VLC doesn't know to retry 
+       them. Setting "needs_vlc=True" in config.ini for the share will 
+       force the use of VLC even for these not-so-compatible files.
 
        RSS Feeds are now kept in a separate top-level folder.
 
