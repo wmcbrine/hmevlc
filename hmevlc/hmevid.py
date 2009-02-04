@@ -180,7 +180,7 @@ class VideoStreamer:
                                          width=w, height=h)
 
         if 'desc' in self.item:
-            top = h * 1.5
+            top = h * 1.3
             self.info.child(ypos=top, colornum=BG, transparency=0.5)
             self.info_desc = self.info.child(x, top,
                                              self.info.width - (x * 2))
