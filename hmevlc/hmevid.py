@@ -126,7 +126,8 @@ class VideoStreamer:
 
     def handle_error(self, code, text):
         print 'Error', code, text
-        print
+        if self.loadwin:
+            self.retry_or_quit()
 
     def status_update(self):
         if not self.progbar:
@@ -196,20 +197,23 @@ class VideoStreamer:
             i = SPEEDS.index(newspeed)
             self.sound(SOUNDS[i])
 
+    def retry_or_quit(self):
+        if self.app.have_vlc and not self.app.using_vlc:
+            self.start_vlc()
+            return
+        self.loadwin_remove()
+        err = self.root.child(text='Error reading stream')
+        time.sleep(3)
+        err.resource.remove()
+        err.remove()
+        self.app.set_focus(self.app)
+
     def handle_resource_info(self, resource, status, info):
         if self.stream and resource == self.stream.id:
             if (status >= hme.RSRC_STATUS_ERROR or
                 status == hme.RSRC_STATUS_CLOSED):
                 if self.loadwin:
-                    if self.app.have_vlc and not self.app.using_vlc:
-                        self.start_vlc()
-                        return
-                    self.loadwin_remove()
-                    err = self.root.child(text='Error reading stream')
-                    time.sleep(3)
-                    err.resource.remove()
-                    err.remove()
-                    self.app.set_focus(self.app)
+                    self.retry_or_quit()
                     return
                 if self.stream.speed:
                     self.sound('alert')
