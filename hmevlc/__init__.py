@@ -236,12 +236,15 @@ class Hmevlc(hme.Application):
         stations = []
         for station in tree.getroot():
             if station.get('rt') != 'NC17':
-                title = station.get('ct').strip()
-                if not title:
-                    title = station.get('name').strip()
-                stations.append({'title': title, 'url': shout_tune +
-                                 station.get('id'), 'needs_vlc': needs_vlc,
-                                 'func': self.play_stream})
+                item = {'url': shout_tune + station.get('id'),
+                        'needs_vlc': needs_vlc, 'func': self.play_stream}
+                name = station.get('name').strip()
+                ct = station.get('ct').strip()
+                if ct:
+                    item.update({'title': ct, 'desc': name})
+                else:
+                    item['title'] = name
+                stations.append(item)
         self.push_menu(shout_item['title'], stations, BLUE)
 
     def new_menu_rss(self, rss_item):
