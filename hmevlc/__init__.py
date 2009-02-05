@@ -1,4 +1,4 @@
-# HME/VLC video streamer, v3.4
+# HME/VLC video streamer, v3.5
 # Copyright 2009 William McBrine
 # Contributions by Jeff Mossontte
 #
@@ -18,7 +18,7 @@
 """ HME app """
 
 __author__ = 'William McBrine <wmcbrine@gmail.com>'
-__version__ = '3.4'
+__version__ = '3.5'
 __license__ = 'GPL'
 
 import os
@@ -51,6 +51,20 @@ def untag(text):
         return TAGS.sub('', text).strip()
     else:
         return ''
+
+def pytivo_metadata(full_path):
+    metadata = {}
+    path, name = os.path.split(full_path)
+    metas = [os.path.join(path, 'default.txt'), full_path + '.txt',
+             os.path.join(path, '.meta', name) + '.txt']
+    for metafile in metas:
+        if os.path.exists(metafile):
+            for line in file(metafile):
+                if line.strip().startswith('#') or not ':' in line:
+                    continue
+                key, value = [x.strip() for x in line.split(':', 1)]
+                metadata[key] = value
+    return metadata
 
 class Hmevlc(hme.Application):
     def startup(self):
@@ -190,14 +204,18 @@ class Hmevlc(hme.Application):
         self.push_menu(share['title'], dirs + files, GREEN, path)
 
     def play_file(self, s):
+        item = {}
+        item.update(s)
         url = s['url']
-        needs_vlc = s['needs_vlc']
-        if not needs_vlc:
+        metadata = pytivo_metadata(url)
+        if 'description' in metadata and metadata['description']:
+            item['desc'] = metadata['description']
+        if not s['needs_vlc']:
             url = url.replace(self.context.server.datapath, '', 1)
             url = 'http://%s/%s' % (self.context.headers['host'],
                                     urllib.quote(url))
-        self.play_stream({'title': s['title'], 'url': url,
-                          'needs_vlc': needs_vlc})
+            item['url'] = url
+        self.play_stream(item)
 
     def top_menu_live(self, live):
         self.push_menu(live['title'], self.stream_list, BLUE)
