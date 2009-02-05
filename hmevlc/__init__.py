@@ -55,9 +55,8 @@ def untag(text):
 def pytivo_metadata(full_path):
     metadata = {}
     path, name = os.path.split(full_path)
-    metas = [os.path.join(path, 'default.txt'), full_path + '.txt',
-             os.path.join(path, '.meta', name) + '.txt']
-    for metafile in metas:
+    for metafile in [os.path.join(path, 'default.txt'), full_path + '.txt',
+                     os.path.join(path, '.meta', name) + '.txt']:
         if os.path.exists(metafile):
             for line in file(metafile):
                 if line.strip().startswith('#') or not ':' in line:
