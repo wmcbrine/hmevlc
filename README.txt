@@ -1,6 +1,6 @@
-HME/VLC video streamer, v3.4
+HME/VLC video streamer, v3.5
 by William McBrine <wmcbrine@gmail.com>
-January 28, 2009
+February 5, 2009
 
 A simple streaming HME server for the TiVo Series 3 or HD.
 
@@ -43,6 +43,25 @@ overhead. However, two different TiVos can't simultaneously watch two
 different streams if they both require VLC.
 
 Changes:
+
+3.5 -- Descriptions for Shoutcast, based on the "name" field. This is
+       actually backwards -- "name" should be the title, and "ct" the
+       description -- but the way the name field is abused, this is the
+       only way that makes sense.
+
+       Support for pyTivo .txt files. Currently only the description is
+       used.
+
+       Retry with VLC (or show the error message) from handle_error() as
+       well as handle_resource_info().
+
+       Tweak the gap between the title and the description -- now six
+       lines fit the info window neatly.
+
+       If the only items are either live streams or RSS feeds, skip
+       their folders. (This is similar to what's done for files, but
+       different -- the top-level menu retains its name and background
+       color.)
 
 3.4 -- No more idle timeout during paused video.
 
