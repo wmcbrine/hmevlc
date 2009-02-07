@@ -42,6 +42,7 @@ TITLE = 'HME/VLC'
 
 GRAPHICS = ('red', 'blue', 'green', 'folder')
 GRAPHICS_TEMPLATES = ('apples/%s.png', 'apples/%s-hd.png')
+RSS_ICONS = ('icons/rss.png', 'icons/rss-hd.png')
 RED, BLUE, GREEN = 0, 1, 2
 
 TAGS = re.compile(r'<.*?>')
@@ -131,7 +132,7 @@ class Hmevlc(hme.Application):
                 elif ET and 'rss' in item:
                     item['func'] = self.new_menu_rss
                     if not 'icon' in item:
-                        item['icon'] = 'icons/rss.png'
+                        item['icon'] = RSS_ICONS[self.hd]
                     self.rss_list.append(item)
                 elif ET and 'shout_list' in item:
                     item['func'] = self.top_menu_shoutcast
