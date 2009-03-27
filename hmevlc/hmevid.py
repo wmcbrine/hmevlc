@@ -203,7 +203,7 @@ class VideoStreamer:
             return
         self.loadwin_remove()
         err = self.root.child(text='Error reading stream')
-        time.sleep(3)
+        self.app.sleep(3)
         err.resource.remove()
         err.remove()
         self.app.set_focus(self.app)

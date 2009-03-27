@@ -35,8 +35,6 @@ __license__ = 'LGPL'
 
 """
 
-import time
-
 import hme
 
 WIPETIME = 0.5
@@ -232,6 +230,6 @@ class ListView:
                 self.title_update('')
                 self.bar.remove()
                 self.base.set_translation(self.w, 0, anim)
-                time.sleep(WIPETIME)
+                self.app.sleep(WIPETIME)
             self.remove()
             hme.Font(self.app)

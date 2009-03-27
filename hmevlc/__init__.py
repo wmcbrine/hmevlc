@@ -23,7 +23,6 @@ __license__ = 'GPL'
 
 import os
 import re
-import time
 import urllib
 try:
     from xml.etree import ElementTree as ET
@@ -76,7 +75,7 @@ class Hmevlc(hme.Application):
         if float(ver[:3]) < 9.4:
             self.root.set_text('Sorry, this program is not compatible\n' +
                                'with this TiVo software/hardware version.')
-            time.sleep(5)
+            self.sleep(5)
             self.active = False
 
     def handle_resolution(self):
