@@ -186,7 +186,7 @@ class Hmevlc(hme.Application):
         path = share['dir']
         needs_vlc = share['needs_vlc']
         dirs, files = [], []
-        for i in sorted(os.listdir(path)):
+        for i in sorted(os.listdir(unicode(path))):
             item = {'title': i, 'needs_vlc': needs_vlc}
             newpath = os.path.join(path, i)
             if os.path.isdir(newpath):
@@ -212,7 +212,7 @@ class Hmevlc(hme.Application):
         if not s['needs_vlc']:
             url = url.replace(self.context.server.datapath, '', 1)
             url = 'http://%s/%s' % (self.context.headers['host'],
-                                    urllib.quote(url))
+                                    urllib.quote(url.encode('utf-8')))
             item['url'] = url
         self.play_stream(item)
 
