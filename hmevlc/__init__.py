@@ -258,7 +258,7 @@ class Hmevlc(hme.Application):
         items = []
         for item in tree.getiterator('item'):
             enc = item.find('enclosure')
-            if enc is not None and enc.get('type').startswith('video'):
+            if enc is not None and enc.get('type', '').startswith('video'):
                 items.append({'title': item.findtext('title').strip(),
                               'url': enc.get('url'), 'needs_vlc': needs_vlc,
                               'func': self.play_stream})
