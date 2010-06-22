@@ -27,13 +27,13 @@ import time
 
 SERVER = 9044     # Port for VLC to use to serve video
 
-VCODEC = 'mp1v'
+VCODEC = 'mp2v'
 ACODEC = 'a52'
-VBITRATE = 2048
+VBITRATE = 4096
 ABITRATE = 384
 PARAMS = '#transcode{vcodec=%(VCODEC)s,vb=%(VBITRATE)d,' + \
          'acodec=%(ACODEC)s,ab=%(ABITRATE)d,audio-sync,samplerate=48000,' + \
-         'fps=29.97}:std{access=http,dst=:%(SERVER)d,mux=ps}'
+         'fps=30}:std{access=http,dst=:%(SERVER)d,mux=ps}'
 
 # Default locations for VLC under Windows, Mac OS X and Linux.
 
