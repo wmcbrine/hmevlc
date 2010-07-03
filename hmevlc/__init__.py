@@ -23,6 +23,7 @@ __license__ = 'GPL'
 
 import os
 import re
+import sys
 import urllib
 try:
     from xml.etree import ElementTree as ET
@@ -46,6 +47,8 @@ RED, BLUE, GREEN = 0, 1, 2
 
 TAGS = re.compile(r'<.*?>')
 
+BOM = '\xef\xbb\xbf'
+
 def untag(text):
     if text:
         return TAGS.sub('', text).strip()
@@ -56,12 +59,24 @@ def pytivo_metadata(full_path):
     metadata = {}
     path, name = os.path.split(full_path)
     for metafile in [os.path.join(path, 'default.txt'), full_path + '.txt',
+                     os.path.join(path, '.meta', 'default.txt'),
                      os.path.join(path, '.meta', name) + '.txt']:
         if os.path.exists(metafile):
-            for line in file(metafile):
+            for line in file(metafile, 'U'):
+                if line.startswith(BOM):
+                    line = line[3:]
                 if line.strip().startswith('#') or not ':' in line:
                     continue
                 key, value = [x.strip() for x in line.split(':', 1)]
+                if not key or not value:
+                    continue
+                try:
+                    value = value.decode('utf8')
+                except:
+                    if sys.platform == 'darwin':
+                        value = value.decode('macroman')
+                    else:
+                        value = value.decode('iso8859-1')
                 metadata[key] = value
     return metadata
 
