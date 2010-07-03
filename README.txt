@@ -217,5 +217,5 @@ Changes:
        accept certain values for these). Not needed for NASA TV, but for
        some other files/streams.
 
-       The progess bar colors and sounds were not always being updated
+       The progress bar colors and sounds were not always being updated
        correctly.
