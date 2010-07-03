@@ -92,6 +92,7 @@ class VideoStreamer:
                                           flags=(hme.RSRC_TEXT_WRAP |
                                                  hme.RSRC_VALIGN_BOTTOM))
             self.root.set_color(BG)
+            self.app.wfile.flush()
             if self.item['needs_vlc']:
                 self.start_vlc()
             else:
