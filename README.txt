@@ -1,17 +1,17 @@
-HME/VLC video streamer, v3.5
+HME/VLC video streamer, v3.6
 by William McBrine <wmcbrine@gmail.com>
-February 5, 2009
+July 3, 2010
 
-A simple streaming HME server for the TiVo Series 3 or HD.
+A simple streaming HME server for the TiVo Series 3+.
 
-Uses ports 9043 and 9044. Tested on Ubuntu Linux 8.04 and 8.10, Mac OS X 
-10.4, and Windows XP.
+Uses ports 9043 and 9044. Tested on Ubuntu Linux 8.04 through 10.04, Mac 
+OS X 10.4, and Windows XP.
 
 Requirements:
 
-- TiVo S3 or HD with 9.4 or later software
+- TiVo S3, HD or Premiere with 9.4 or later software
 
-- Python 2.4 or later (2.5 or later recommended)
+- Python -- 2.x only (2.6.x recommended)
   http://python.org/
 
 - VLC (0.8.6 recommended)
@@ -42,7 +42,30 @@ multiple TiVos watching the same stream, with little additional
 overhead. However, two different TiVos can't simultaneously watch two 
 different streams if they both require VLC.
 
+VLC 0.9 through early 1.x was broken for HME/VLC's purposes.
+
 Changes:
+
+3.6 -- The latest versions of VLC finally work again, _if_ the frame
+       rate is set to 30 (instead of 29.97) and the codec to mp2v
+       (instead of mp1v). Reported by "Allanon".
+
+       Now based on HME for Python version 0.18, which includes e.g.
+       various fixes for Zeroconf.
+
+       Support for non-ASCII characters in filenames and description
+       text.
+
+       The new HD UI on the TiVo Premiere requires RGB icons; use a
+       standard-def RSS icon when appropriate.
+
+       Encode audio at 48 KHz instead of 44.1; default video bitrate is
+       now 4 Mbps instead of 2.
+
+       Some broken feeds have enclosures with no types.
+
+       Purged some streams and feeds that no longer work, including
+       C-SPAN.
 
 3.5 -- Descriptions for Shoutcast, based on the "name" field. This is
        actually backwards -- "name" should be the title, and "ct" the
