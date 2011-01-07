@@ -21,6 +21,7 @@ __version__ = '3.6'
 __license__ = 'GPL'
 
 import os
+import socket
 import time
 
 import hme
@@ -30,7 +31,8 @@ SPEEDS = [-60, -18, -3, 1, 3, 18, 60]
 SOUNDS = ['speedup3', 'speedup2', 'speedup1', 'slowdown1', 'speedup1', 
           'speedup2', 'speedup3']
 COLORS = [0x4f4fff, 0x7f7fff, 0x9f9fff, 0xffcfcf, 0xff9f9f, 0xff7f7f, 0xff4f4f]
-
+ASPECTS = ['ASPECT_CORRECTION_PANEL', 'ASPECT_CORRECTION_ZOOM',
+           'ASPECT_CORRECTION_FULL']
 BG = 0
 BG2 = 0x7f7f7f
 FG = 0xcfcfcf
@@ -65,6 +67,7 @@ class VideoStreamer:
         (self.bheight, self.fsize, self.tgap, self.vgap, self.twidth,
          self.twidth2, self.bwidth, self.lwidth, self.lheight) = sizes
         self.bsize = self.bwidth + self.tgap + self.twidth + 1
+        self.aspect_mode = 0
 
     def loadwin_remove(self):
         if self.loadwin:
@@ -278,6 +281,22 @@ class VideoStreamer:
             self.loadbar.set_bounds(xpos=newx, animtime=1)
             self.send_key(hme.KEY_TIVO, 0, animtime=1)
 
+    def next_aspect(self):
+        try:
+            sock = socket.socket()
+            sock.settimeout(5)
+            sock.connect((self.app.context.client_address[0], 31339))
+            sock.settimeout(None)
+        except:
+            sock = None
+        if sock:
+            self.aspect_mode += 1
+            if self.aspect_mode == len(ASPECTS):
+                self.aspect_mode = 0
+            time.sleep(0.1)
+            sock.sendall('IRCODE %s\r' % ASPECTS[self.aspect_mode])
+            sock.close()
+
     def handle_key_press(self, code, rawcode):
         if code == hme.KEY_PLAY:
             if self.stream.speed == 1 and self.progbar.visible:
@@ -335,7 +354,10 @@ class VideoStreamer:
         elif code == hme.KEY_LEFT:
             self.sound('left')
             self.app.set_focus(self.app)
-        elif code not in (hme.KEY_VOLUMEUP, hme.KEY_VOLUMEDOWN, hme.KEY_MUTE):
+        elif code == hme.KEY_OPT_ASPECT:
+            self.next_aspect()
+        elif code not in (hme.KEY_VOLUMEUP, hme.KEY_VOLUMEDOWN, hme.KEY_MUTE,
+                          hme.KEY_UNKNOWN):
             self.sound('bonk')
 
     def handle_idle(self, idle):
